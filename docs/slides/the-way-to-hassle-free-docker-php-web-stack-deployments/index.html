@@ -1,0 +1,875 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>The Way to Hassle Free Docker PHP Web Stack Deployments by Sandro Keil</title>
+    <meta name="description" content="This talk is about single source of truth, rebuild any version, any service, any time, and what's going on in my app aka logging.">
+    <meta name="author" content="Sandro Keil">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    <link rel="canonical" href="https://sandro-keil.de/slides/the-way-to-hassle-free-docker-php-web-stack-deployments">
+    <link rel="shortlink" href="https://sandro-keil.de/slides/the-way-to-hassle-free-docker-php-web-stack-deployments">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="twitter:site" content="@SandroKeil">
+    <meta name="twitter:creator" content="@SandroKeil">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/apple-icon.png">
+
+    <link rel="stylesheet" href="/slides/revealjs/css/reveal.min.css">
+    <link rel="stylesheet" href="/slides/revealjs/css/theme/sake.css" id="theme">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="/slides/revealjs/lib/css/ir-black.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = window.location.search.match( /print-pdf/gi ) ? '/slides/revealjs/css/print/pdf.css' : '/slides/revealjs/css/print/paper.css';
+        document.getElementsByTagName( 'head' )[ 0 ].appendChild( link );
+    </script>
+    <!--[if lt IE 9]>
+    <script src="/slides/revealjs/lib/js/html5shiv.js"></script>
+    <![endif]-->
+    <meta property="og:site_name" content="Talks by Sandro Keil" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="The Way to Hassle Free Docker PHP Web Stack Deployments by Sandro Keil" />
+    <meta property="og:description" content=" This talk is about single source of truth, rebuild any version, any service, any time, and what's going on in my app aka logging." />
+    <meta property="og:url" content="https://sandro-keil.de/slides/the-way-to-hassle-free-docker-php-web-stack-deployments" />
+    <meta property="og:image" content="https://sandro-keil.de/blog/content/images/2016/09/sandro-keil-phpdd16.png" />
+    <meta property="article:published_time" content="2016-09-24T23:23:12.000Z" />
+    <meta property="article:modified_time" content="2016-09-24T23:23:12.000Z" />
+    <meta property="article:tag" content="PHP" />
+    <meta property="article:tag" content="Docker" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="The Way to Hassle Free Docker PHP Web Stack Deployments by Sandro Keil" />
+    <meta name="twitter:description" content=" This talk is about single source of truth, rebuild any version, any service, any time, and what's going on in my app aka logging." />
+    <meta name="twitter:url" content="https://sandro-keil.de/slides/the-way-to-hassle-free-docker-php-web-stack-deployments" />
+    <meta name="twitter:image:src" content="https://sandro-keil.de/blog/content/images/2016/09/sandro-keil-phpdd16.png" />
+    <script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type": "Person",
+  "name": "Sandro Keil",
+  "image": "https://sandro-keil.de/assets/img/sandro_business.jpg",
+  "url": "https://sandro-keil.de",
+  "sameAs" : [
+      "https://twitter.com/SandroKeil",
+      "https://www.xing.com/profile/Sandro_Keil",
+      "https://github.com/sandrokeil"
+    ]
+  }
+}
+    </script>
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "publisher": "Blog by Sandro Keil",
+    "author": {
+        "@type": "Person",
+        "name": "Sandro Keil",
+        "image": "https://sandro-keil.de/blog/content/images/2014/11/xing.jpg",
+        "url": "https://sandro-keil.de/blog/author/sandrokeil",
+        "sameAs": "https://twitter.com/SandroKeil",
+        "description": "Sandro Keil is a Zend Certified PHP Engineer and a ZF2 Certified Architect. He writes about topics, advices and trends of web development."
+    },
+    "headline": "The Way to Hassle Free Docker PHP Web Stack Deployments",
+    "url": "https://sandro-keil.de/slides/the-way-to-hassle-free-docker-php-web-stack-deployments",
+    "datePublished": "2016-09-24T23:23:12.000Z",
+    "dateModified": "2016-09-24T23:23:12.000Z",
+    "image": "https://sandro-keil.de/blog/content/images/2016/09/sandro-keil-phpdd16.png",
+    "keywords": "PHP, Docker",
+    "description": " This talk is about single source of truth, rebuild any version, any service, any time, and what's going on in my app aka logging."
+}
+    </script>
+</head>
+<body class="background-gutter">
+<div class="reveal">
+    <div class="slides">
+        <section>
+            <h2 class="heading-color">the way to hassle free docker php web stack deployments</h2>
+            <p>by Sandro Keil</p>
+            <p>IT-Consultant / Senior Software Developer <a href="https://twitter.com/prooph_software">@prooph_software</a></p>
+            <p>Author, Blogger, Open Source Evangelist</p>
+            <p><a href="https://sandro-keil.de/">https://sandro-keil.de</a></p>
+        </section>
+
+
+        <section>
+            <h1>Require<br>ments</h1>
+        </section>
+
+
+        <section>
+            <h2 class="third-color">Know <strong>current</strong><br>released <span class="heading-color">version</span></h2>
+            <aside class="notes">
+                <ul>
+                    <li>Complete stack / software</li>
+                    <li>Payment Card Industry Data Security Standard (PCI-DSS)</li>
+                </ul>
+            </aside>
+        </section>
+        <section data-transition="zoom" data-background-transition="zoom"  data-background="/slides/img/immutable-systems.jpg">
+            <h2 class="third-color"><strong>Immutable</strong> <span class="heading-color">Infrastructure</span></h2>
+            <br><br>
+            <span class="fragment fade-left secondary-color">Never touch a running system</span>
+            <aside class="notes">
+                <ul>
+                    <li>create new instances / destroy the old ones</li>
+                    <li>Benefits repeatability, reduced management overhead, easier rollbacks</li>
+                </ul>
+            </aside>
+        </section>
+        <section>
+            <h2 class="third-color">Build <strong>every</strong> <span class="heading-color">version</span></h2>
+            <h2 class="fragment fade-left third-color"><strong>every</strong> <span class="heading-color">time</span></h2>
+            <aside class="notes">
+                <ul>
+                    <li>primary requirements:
+                        <ul>
+                            <li>application processes are stateless (no sticky sessions, DB as datastore)</li>
+                            <li>template/instructions deploy an instance of your application from scratch</li>
+                        </ul>
+                    </li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h2 class="third-color">Application <span class="heading-color">provisioning</span><br>only <strong>once</strong></h2>
+            <aside class="notes">
+                <ul>
+                    <li>PHP dependencies via Composer</li>
+                    <li>GitHub rate limit in the past</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h2 class="third-color"><strong>Single</strong> source<br>of <span class="heading-color">truth</span></h2>
+            <object id="container-danger-svg" type="image/svg+xml" data="/slides/img/sign-container-danger.svg" style="height: 500px;"></object>
+            <aside class="notes">
+                <ul>
+                    <li>only one PHP base image</li>
+                    <li>configured for production</li>
+                    <li>PHP extensions</li>
+                </ul>
+            </aside>
+        </section>
+        <section>
+            <h2 class="third-color"><span class="heading-color">Auto tagging</span> of <span class="docker-color">Docker</span> images</h2>
+            <h2 class="third-color fragment fade-left"><strong>depending</strong> on <span class="heading-color">application version</span></h2>
+            <aside class="notes">
+                <ul>
+                    <li>only for Docker images with PHP application</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h1>PHP Web Stack</h1>
+        </section>
+
+        <section>
+            <object style="margin-right:-350px;" id="web-stack-svg" type="image/svg+xml" data="/slides/img/docker-web-stack.svg"></object>
+        </section>
+
+
+        <section>
+            <h1>Build Strategy</h1>
+        </section>
+
+
+        <section>
+            <h2 class="third-color">
+                Every <span class="heading-color">service</span> has an<br><strong>own</strong>
+                <span class="docker-color">Docker</span> image
+            </h2>
+            <img class="" style="width:50%" src="/slides/img/database-151392.svg" title="Docker Image"/>
+
+            <aside class="notes">
+                <ul>
+                    <li>Better scaling / tuning</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h2 class="third-color">
+                <span class="docker-color">Docker</span> images with <span class="heading-color">application code</span> in
+                <br><strong>one</strong> repository
+            </h2>
+            <br>
+            <br>
+            <span class="fragment fade-left secondary-color">Dockerfiles not in application repository</span>
+            <aside class="notes">
+                <ul>
+                    <li>Easier handling</li>
+                    <li>Build only once</li>
+                    <li>Otherwise artifact repository</li>
+                    <li>new DB version, no app release</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <section>
+                <h2 class="third-color">
+                    Different
+                    <br><span class="docker-color">Docker Compose</span>  <span class="heading-color">configurations</span>
+                </h2>
+                <h2 class="third-color fragment fade-left">for different<br><strong>environments</strong></h2>
+                <aside class="notes">
+                    <ul>
+                        <li>Slide down</li>
+                    </ul>
+                </aside>
+            </section>
+            <section>
+                <pre><code class="bash">$ export COMPOSE_FILE=docker-compose.yml:docker-compose-dev.yml</code></pre>
+                <pre><code class="bash">$ docker-compose up -d --no-recreate</code></pre>
+
+                <pre>
+                    <code># docker-compose.yml
+version: '2'
+services:
+  php:
+    image: sake-php-fpm:1.0.0
+    restart: "always"
+    networks:
+      - backend
+
+# docker-compose-dev.yml
+version: '2'
+services:
+  php:
+    image: sake-php-fpm-dev:1.0.0
+    restart: "no"
+    volumes:
+      - ./:/var/www</code></pre>
+                <aside class="notes">
+                    <ul>
+                        <li>Merging of configuration</li>
+                        <li>With extends links, volumes_from, and depends_on not shared</li>
+                    </ul>
+                </aside>
+            </section>
+        </section>
+
+        <section>
+            <section>
+                <h2 class="third-color">
+                    Application <span class="heading-color">configuration</span>
+                    <br>via <strong>ENV</strong><br>variables
+                </h2>
+                <br><br>
+                <span><a href="http://12factor.net/config" target="_blank" title="Open 12factor.net">The Twelve-Factor App</a></span>
+                <aside class="notes">
+                    <ul>
+                        <li>no server config in application</li>
+                        <li>alternative service discovery (combined)</li>
+                        <li>Slide down</li>
+                    </ul>
+                </aside>
+            </section>
+            <section><pre><code># docker-compose.yml
+version: '2'
+services:
+  php:
+    image: sake-php-fpm:1.0.0
+    restart: "always"
+    environment:
+      - MONGODB_DATABASE=${MONGODB_DATABASE}
+    networks:
+      - backend
+                </code></pre>
+                <pre>
+                    <code class="php hljs">&lt;?php
+// mongodb.global.php
+return [
+    'mongodb' => [
+        'dbname' => getenv('MONGODB_DATABASE'),
+    ],
+];
+                </code></pre>
+            </section>
+        </section>
+
+        <section>
+            <h2 class="third-color">
+                Use <strong>own</strong><br>
+                <span class="docker-color">Docker</span> <span class="heading-color">Registry</span>
+            </h2>
+            <aside class="notes">
+                <ul>
+                    <li>Amazon ECR</li>
+                    <li>Docker Registry</li>
+                    <li>GitLab Container Registry</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h1>Build Implemen<br>tation</h1>
+        </section>
+        <!-- next iteration maybe picture -> Dockerfile(s) -> picture -> Docker ... -->
+
+        <section data-transition="fade-in fade-out" data-transition-speed="slow">
+            <object id="docker-image-php-1" type="image/svg+xml" data="/slides/img/docker-image-php-1.svg"></object>
+            <aside class="notes">
+                <ul>
+                    <li>UML hint</li>
+                    <li>PHP BASE production config / ext</li>
+                    <li>PHP APP source code</li>
+                </ul>
+            </aside>
+        </section>
+        <section data-transition="fade-in fade-out" data-transition-speed="slow">
+            <object id="docker-image-php-2" type="image/svg+xml" data="/slides/img/docker-image-php-2.svg"></object>
+            <aside class="notes">
+            <ul>
+                <li>COMPOSER extends from PHP BASE</li>
+                <li>PHP APP uses COMPOSER</li>
+            </ul>
+            </aside>
+        </section>
+        <section data-transition="fade-in fade-out" data-transition-speed="slow">
+            <object id="docker-image-php-3" type="image/svg+xml" data="/slides/img/docker-image-php-3.svg"></object>
+            <aside class="notes">
+                <ul>
+                    <li>PHP FPM copy pool config / change CMD</li>
+                    <li>PHP FPM DEV xdebug, disable opcache, ...</li>
+                </ul>
+            </aside>
+        </section>
+        <section data-transition="fade-in fade-out" data-transition-speed="slow">
+            <object id="docker-image-php-4" type="image/svg+xml" data="/slides/img/docker-image-php-4.svg"></object>
+            <aside class="notes">
+                <ul>
+                    <li>special PHP config for CLI, memory limit</li>
+                    <li>worker entrypoint script</li>
+                </ul>
+            </aside>
+        </section>
+        <section>
+            <h2 class="third-color">infra-app repository</h2>
+            <pre><code class="bash">├── config/
+│   ├── ext/
+│   │   ├── mongodb.ini
+│   │   └── opcache.ini
+│   ├── ext-dev/
+│   │   └── xdebug.ini
+│   ├── fpm/
+│   ├── nginx/
+│   ├── nginx-dev/
+│   └── php.ini
+├── composer
+├── nginx
+├── nginx-dev
+├── php-app
+├── php-base
+├── php-fpm
+├── php-fpm-dev
+├── php-worker
+├── php-worker-dev
+└── www/</code></pre>
+            <aside class="notes">
+                <ul>
+                    <li>Docker image infra repo example</li>
+                    <li>www folder contains PHP app source code</li>
+                    <li>nginx delivers PHP app assets</li>
+                </ul>
+            </aside>
+        </section>
+        <section>
+            <section>
+                <h2 class="third-color">PHP-BASE Dockerfile</h2>
+                <pre><code>FROM php:7.0.11-fpm
+WORKDIR /var/www
+
+RUN apt-get update \
+    && apt-get install -y \
+        libicu-dev \
+        libmcrypt-dev \
+        libssl-dev \
+    && rm -r /var/lib/apt/lists/* \
+    && pecl install mongodb \
+    && docker-php-ext-configure opcache --enable-opcache \
+    && docker-php-ext-configure intl --enable-intl \
+    && docker-php-ext-install intl opcache \
+    && rm -rf /var/www \
+    && mkdir -p /var/www \
+    && rm -rf /usr/local/etc/php-fpm.d \
+    && rm -rf /usr/local/etc/php-fpm.conf
+
+COPY config/ext $PHP_INI_DIR/conf.d/
+COPY config/php.ini $PHP_INI_DIR/
+
+CMD ["php", "-v"]</code></pre>
+                <aside class="notes">
+                    <ul>
+                        <li>Pin to PHP patch version</li>
+                        <li>Built for production</li>
+                        <li>Override command</li>
+                        <li>slide down</li>
+                    </ul>
+                </aside>
+            </section>
+            <section>
+                <h2 class="third-color">PHP-BASE build</h2>
+                <pre><code class="bash">$ echo "Docker login on Docker registry"
+
+$ echo "Build php-base image"
+
+$ docker build -t sake-php-base:${TAG} -f php-base .
+
+$ docker tag sake-php-base:${TAG} myregistry.com/sake-php-base:${TAG} \
+    && docker push myregistry.com/sake-php-base:${TAG}</code></pre>
+                <aside class="notes">
+                    <ul>
+                        <li>Docker image infra repo from above</li>
+                        <li>determine PHP app tag can be tricky, using tag 1.0.0</li>
+                    </ul>
+                </aside>
+            </section>
+        </section>
+        <section>
+            <section>
+            <h2 class="third-color">COMPOSER Dockerfile</h2>
+            <pre><code>FROM myregistry.com/sake-php-base:1.0.0
+
+ENV COMPOSER_HOME /root/composer
+ENV COMPOSER_VERSION master
+
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        libbz2-dev \
+        libzip-dev \
+        git \
+        unzip \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/www \
+    && docker-php-ext-install zip bz2 \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+    && sed -i 's/memory_limit="128M"/memory_limit=-1/g' $PHP_INI_DIR/php.ini
+
+VOLUME ["/app"]
+WORKDIR /app
+
+CMD ["-"]
+ENTRYPOINT ["composer", "--ansi"]</code></pre>
+                <aside class="notes">
+                    <ul>
+                        <li>slide down</li>
+                    </ul>
+                </aside>
+            </section>
+            <section>
+                <h2 class="third-color">Composer build</h2>
+                <pre><code class="bash">$ echo "Replace image version with ${TAG} in composer file"
+
+$ echo "Build composer image"
+
+$ docker build -t sake-composer:${TAG} -f composer .
+
+$ docker tag sake-composer:${TAG} myregistry.com/sake-composer:${TAG} \
+    && docker push myregistry.com/sake-composer:${TAG}</code></pre>
+                <aside class="notes">
+                    <ul>
+                        <li>same procedure for other images</li>
+                    </ul>
+                </aside>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2 class="third-color">PHP-APP Dockerfile</h2>
+                <pre><code>FROM myregistry.com/sake-php-base:1.0.0
+
+COPY www /var/www
+
+RUN rm -rf /var/www/public/assets \
+    && chown www-data:www-data /var/www -R \
+    && find /var/www/ -type d -exec chmod 755 {} \; \
+    && find /var/www/ -type f -exec chmod 644 {} \;</code></pre>
+                <aside class="notes">
+                    <ul>
+                        <li>slide down</li>
+                    </ul>
+                </aside>
+            </section>
+            <section>
+                <h2 class="third-color">PHP-APP build</h2>
+                <pre><code class="bash">$ git clone --branch ${TAG} git@github.org:sandrokeil/php-demo.git www
+
+$ cd www
+
+$ docker run -i -v $(pwd):/app myregistry.com/sake-composer:${TAG} \
+    install --no-interaction --no-dev --optimize-autoloader
+
+$ cd ..
+
+$ echo "Replace image version with ${TAG} in php-app file"
+
+$ echo "Build php-app image"
+
+$ docker build -t sake-php-app:${TAG} -f php-app .
+
+$ docker tag sake-php-app:${TAG} myregistry.com/sake-php-app:${TAG} \
+    && docker push myregistry.com/sake-php-app:${TAG}</code></pre>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2 class="third-color">php-worker dockerfile</h2>
+                <pre><code class="bash">FROM myregistry.com/sake-php-app:1.0.0
+
+RUN sed -i 's/memory_limit="128M"/memory_limit=-1/g' \
+    $PHP_INI_DIR/php.ini
+
+COPY worker/docker-entrypoint.sh /usr/local/bin/
+RUN ln -s /usr/local/bin/docker-entrypoint.sh / # backwards compat
+
+CMD ["list"]
+ENTRYPOINT ["docker-entrypoint.sh"]</code></pre>
+                <aside class="notes">
+                    <ul>
+                        <li>slide down</li>
+                    </ul>
+                </aside>
+            </section>
+            <section>
+                <h2 class="third-color">php-worker entrypoint</h2>
+                <pre><code class="bash">#!/bin/bash
+
+# Define defaults
+WORKER="${WORKER:-1}"
+SLEEP="${SLEEP:-5}"
+
+until [  $WORKER -lt 1 ]; do
+    let WORKER-=1
+    exec php /var/www/public/index.php "$@" &
+    sleep $SLEEP
+done
+
+wait</code></pre>
+                <aside class="notes">
+                    <ul>
+                        <li>only an example</li>
+                        <li>slide down</li>
+                    </ul>
+                </aside>
+            </section>
+            <section>
+                <h2 class="third-color">docker-compose.yml</h2>
+                <pre><code class="bash">version: '2'
+services:
+    sake-php-negotiation-dequeue:
+        image: myregistry.com/sake-php-worker:1.0.0
+        restart: always
+        environment:
+          - WORKER=12
+          - SLEEP=5
+        command: sake:negotiation-queue:dequeue</code></pre>
+                <aside class="notes">
+                    <ul>
+                        <li>memory leaks</li>
+                        <li>replaces crontab</li>
+                        <li>use Docker Compose to scale</li>
+                        <li>restart always</li>
+                    </ul>
+                </aside>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2 class="third-color">nginx Dockerfile</h2>
+                <pre><code>FROM nginx:1.11.1
+
+RUN rm -rf /var/www \
+    && mkdir -p /var/www
+
+COPY www/public/assets /var/www
+COPY config/nginx /etc/nginx/
+
+WORKDIR /var/www</code></pre>
+                <aside class="notes">
+                    <ul>
+                        <li>no PHP files</li>
+                        <li>only static content</li>
+                        <li>Frontend build Gulp / Grunt</li>
+                        <li>slide down</li>
+                    </ul>
+                </aside>
+            </section>
+            <section>
+                <h2 class="third-color">nginx build</h2>
+                <pre><code class="bash">$ echo "Build nginx image"
+
+$ docker build -t sake-nginx:${TAG} -f nginx .
+
+$ docker tag sake-nginx:${TAG} myregistry.com/sake-nginx:${TAG} \
+    && docker push myregistry.com/sake-nginx:${TAG}</code></pre>
+            </section>
+        </section>
+
+        <section>
+            <h1>Pitfalls</h1>
+        </section>
+        <section>
+            <h2 class="third-color">
+                <span class="docker-color">Docker Registry</span><br><span class="heading-color">Authentication</span>
+            </h2>
+        </section>
+        <section>
+            <h2 class="third-color">
+                <strong>data</strong><br><span class="heading-color">Persistence</span>
+            </h2>
+            <br><br>
+            <span class="fragment fade-left"><a href="https://sandro-keil.de/blog/2016/05/02/docker-compose-with-named-volumes-and-multiple-networks/" target="_blank" title="Open blog post">Docker named volumes</a></span>
+            <aside class="notes">
+                <ul>
+                    <li>Database data</li>
+                    <li>User data</li>
+                    <li>Volume driver like flocker</li>
+                    <li>volumes not deleted on cmd down</li>
+                    <li>Volume list (disk space)</li>
+                </ul>
+            </aside>
+        </section>
+        <section>
+            <h2 class="third-color">
+                <span class="heading-color">Composer</span><br>and
+                <br><strong>private</strong><br>Repositories
+            </h2>
+            <aside class="notes">
+                <ul>
+                    <li>SSH Agent Auth Socket mount issue Win, OSX</li>
+                    <li>Build agent needs SSH key</li>
+                    <li>it's not an option to put SSH key in Composer image</li>
+                </ul>
+            </aside>
+        </section>
+        <section>
+            <h2 class="third-color">
+                <span class="heading-color">syslog</span> driver<br><strong>TCP</strong> logging
+            </h2>
+            <br><br>
+            <span><a href="https://github.com/docker/docker/issues/21966" target="_blank" title="Open issue on GitHub">TCP syslog issue</a></span>
+            <aside class="notes">
+                <ul>
+                    <li>use UDP instead of TCP</li>
+                    <li>Use Logspout as workaround</li>
+                </ul>
+            </aside>
+        </section>
+        <section>
+            <h2 class="third-color">
+                <span class="heading-color">PHP-FPM</span><br>splits and truncates <strong>logs</strong>
+            </h2>
+            <br><br>
+            <span><a href="https://github.com/php/php-src/pull/1076" target="_blank" title="Open issue on GitHub">PHP-FPM logging issue</a></span>
+            <aside class="notes">
+                <ul><li>Redis cluser with logstash plugin</li></ul>
+            </aside>
+        </section>
+
+        <section data-background="/slides/img/blue-php-elephant.jpg">
+            <br/><br/>
+            <ul class="list-inline">
+                <li>
+                    <a href="https://github.com/sandrokeil" target="_blank" class="list-link" title="Github">
+                        <i class="fa fa-github"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://twitter.com/SandroKeil" target="_blank" class="list-link" title="Twitter">
+                        <i class="fa fa-twitter"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="http://de.linkedin.com/pub/sandro-keil/99/291/7b2" target="_blank" class="list-link"
+                       title="LinkedIn">
+                        <i class="fa fa-linkedin"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://www.xing.com/profile/Sandro_Keil" target="_blank" class="list-link" title="Xing">
+                        <i class="fa fa-xing"></i>
+                    </a>
+                </li>
+            </ul>
+            <h3 class="third-color">Questions ?</h3>
+            <p><a href="https://sandro-keil.de/blog/tag/docker/" class="g-btn color_white outlined"><span>Visit My Website</span></a>
+        </section>
+    </div>
+</div>
+
+<div id="hidden" style="display:none;">
+    <div id="header">
+        <div id="footer-left">@sandrokeil</div>
+    </div>
+</div>
+
+<script src="/slides/revealjs/lib/js/head.min.js"></script>
+<script src="/slides/revealjs/js/reveal.min.js"></script>
+<script>
+    Reveal.initialize( {
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+        // Optional reveal.js plugins
+        dependencies: [
+            {
+                src: '/slides/revealjs/lib/js/classList.js', condition: function() {
+                return !document.body.classList;
+            }
+            },
+            {
+                src: '/slides/revealjs/plugin/markdown/marked.js', condition: function() {
+                return !!document.querySelector( '[data-markdown]' );
+            }
+            },
+            {
+                src: '/slides/revealjs/plugin/markdown/markdown.js', condition: function() {
+                return !!document.querySelector( '[data-markdown]' );
+            }
+            },
+            {
+                src: '/slides/revealjs/plugin/highlight/highlight.js', async: true, callback: function() {
+                hljs.initHighlightingOnLoad();
+            }
+            },
+            { src: '/slides/revealjs/plugin/zoom-js/zoom.js', async: true },
+            { src: '/slides/revealjs/plugin/notes/notes.js', async: true }
+        ]
+    } );
+
+</script>
+<script src="/slides/revealjs/js/jquery-2.2.4.min.js"></script>
+<script src="/assets/js/TweenMax.min.js"></script>
+<script src="/assets/js/vivus.min.js"></script>
+<script type="text/javascript">
+    var canvas = null;
+    var ctx = null;
+    var png = null;
+    var particles = [];
+
+    Reveal.addEventListener( 'slidechanged', function( event ) {
+        switch (event.indexh) {
+            case 6:
+                var svg = $( "#container-danger-svg" );
+                var tl = new TimelineLite( { delay: 5 } );
+
+                var vars = {
+                    origin: 'left top',   // transformOrigin
+                    perspective: 0,       // transformPerspective
+                    ease: Power1.easeInOut, // an easeInOut should really be used here...
+                    power: 1,               // multiplier for the effect that is reduced to 0 over the duration
+                    duration: 5,            // total length of the effect (well, it can be up to vars.speed longer than this)
+                    rotation: 0,          // start rotation, also stores target rotations during tween
+                    maxrotation: 45,        // * max rotation after starting
+                    speed: 0.5,             // minimum duration for each swing
+                    maxspeed: 0.2           // * extra duration to add to the larger swings (any sort of real physics seems like overkill)
+                };
+
+                tl.add( [
+                    TweenMax.fromTo( svg, 0.2, { x: -3 }, { x: 3, clearProps: "x", repeat: 30 } ),
+                    TweenMax.fromTo( svg, 0.1, { y: -3 }, { y: 3, clearProps: "y", repeat: 60 } )
+                ] );
+
+                tl.add( [
+                    TweenMax.set( svg, {
+                        rotation: vars.rotation,
+                        transformOrigin: vars.origin,
+                        transformPerspective: vars.perspective
+                    } )
+                ] );
+
+                tl.add( [
+                    TweenMax.to( svg, vars.speed, { rotation: 45, ease: vars.ease } )
+                ] );
+
+                break;
+            case 9:
+                var svg = $("#web-stack-svg");
+                var tl = new TimelineLite( { delay: 1 } );
+
+                tl.add([
+                    TweenMax.to(svg, 6, {x:-400, ease:Linear.easeNone}),
+                    TweenMax.to(svg, 1, {y:"100", repeat:5, yoyo:true, ease:Sine.easeInOut})
+                ]);
+                tl.add([
+                    TweenMax.fromTo(svg, 0.4, {transformOrigin:'left top'}, {rotationY: 180}),
+                    TweenMax.to(svg, 6, {x:400, ease:Linear.easeNone}),
+                    TweenMax.to(svg, 1, {y:"100", repeat:5, yoyo:true, ease:Sine.easeInOut}),
+                ]);
+                tl.add([
+                    TweenMax.fromTo(svg, 0.4, {transformOrigin:'left top'}, {rotationY: 360}),
+                    TweenMax.to(svg, 3, {x:-100, ease:Linear.easeNone}),
+                    TweenMax.to(svg, 1, {y:"100", repeat:3, yoyo:true, ease:Sine.easeInOut})
+                ]);
+                tl.add([
+                    TweenMax.to(svg, 0.8, {rotation: 360, svgOrigin:"200 200"})
+                ]);
+                break;
+            case 17:
+                new Vivus('docker-image-php-1', {
+                    type: 'async',
+                    duration: 150,
+                    animTimingFunction: Vivus.EASE,
+                    pathTimingFunction: Vivus.EASE_OUT_BOUNCE
+                }, function(){});
+                break;
+            case 18:
+                new Vivus('docker-image-php-2', {
+                    type: 'async',
+                    duration: 150,
+                    animTimingFunction: Vivus.EASE,
+                    pathTimingFunction: Vivus.EASE_OUT_BOUNCE
+                }, function(){});
+                break;
+            case 19:
+                new Vivus('docker-image-php-3', {
+                    type: 'async',
+                    duration: 150,
+                    animTimingFunction: Vivus.EASE,
+                    pathTimingFunction: Vivus.EASE_OUT_BOUNCE
+                }, function(){});
+                break;
+            case 20:
+                new Vivus('docker-image-php-4', {
+                    type: 'async',
+                    duration: 150,
+                    animTimingFunction: Vivus.EASE,
+                    pathTimingFunction: Vivus.EASE_OUT_BOUNCE
+                }, function(){});
+                break;
+            default:
+                break;
+        }
+    } );
+</script>
+<script type="text/javascript">
+    // 3. On Reveal.js ready event, copy header/footer <div> into each `.slide-background` <div>
+    var header = $('#header').html();
+    if ( window.location.search.match( /print-pdf/gi ) ) {
+        Reveal.addEventListener( 'ready', function( event ) {
+            $('.slide-background').append(header);
+        });
+    }
+    else {
+        $('div.reveal').append(header);
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>Autoloading Grunt tasks concurrently with optimized assets</title>
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/apple-icon.png"/>
+    <link rel="stylesheet" type="text/css" href="/blog/assets/css/casperion.min.css?v=30fcd7d37c" />
+
+    <meta name="description" content="Learn how to make your Grunt tasks faster and have a fully fledged front-end build process with optimized assets and code quality assurance tools." />
+    <link rel="shortcut icon" href="/blog/favicon.ico" type="image/x-icon" />
+    <link rel="canonical" href="https://sandro-keil.de/blog/autoloading-grunt-tasks-concurrently-with-optimized-assets/" />
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    <link rel="amphtml" href="https://sandro-keil.de/blog/autoloading-grunt-tasks-concurrently-with-optimized-assets/amp/" />
+    
+    <meta property="og:site_name" content="Blog by Sandro Keil" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Autoloading Grunt tasks concurrently with optimized assets" />
+    <meta property="og:description" content="Learn how to make your Grunt tasks faster and have a fully fledged front-end build process with optimized assets and code quality assurance tools." />
+    <meta property="og:url" content="https://sandro-keil.de/blog/autoloading-grunt-tasks-concurrently-with-optimized-assets/" />
+    <meta property="og:image" content="https://sandro-keil.de/blog/content/images/2015/07/construction.jpg" />
+    <meta property="article:published_time" content="2015-07-13T19:06:36.000Z" />
+    <meta property="article:modified_time" content="2015-07-15T16:16:35.000Z" />
+    <meta property="article:tag" content="build" />
+    
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Autoloading Grunt tasks concurrently with optimized assets" />
+    <meta name="twitter:description" content="Learn how to make your Grunt tasks faster and have a fully fledged front-end build process with optimized assets and code quality assurance tools." />
+    <meta name="twitter:url" content="https://sandro-keil.de/blog/autoloading-grunt-tasks-concurrently-with-optimized-assets/" />
+    <meta name="twitter:image" content="https://sandro-keil.de/blog/content/images/2015/07/construction.jpg" />
+    <meta name="twitter:label1" content="Written by" />
+    <meta name="twitter:data1" content="Sandro Keil" />
+    <meta name="twitter:label2" content="Filed under" />
+    <meta name="twitter:data2" content="build" />
+    <meta name="twitter:site" content="@SandroKeil" />
+    <meta name="twitter:creator" content="@SandroKeil" />
+    <meta property="og:image:width" content="826" />
+    <meta property="og:image:height" content="450" />
+    
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Blog by Sandro Keil",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://sandro-keil.de/blog/favicon.ico",
+            "width": 60,
+            "height": 60
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Sandro Keil",
+        "image": {
+            "@type": "ImageObject",
+            "url": "https://sandro-keil.de/blog/content/images/2018/08/ipc.jpg",
+            "width": 512,
+            "height": 512
+        },
+        "url": "https://sandro-keil.de/blog/author/sandrokeil/",
+        "sameAs": [
+            "https://github.com/sandrokeil",
+            "https://twitter.com/SandroKeil"
+        ]
+    },
+    "headline": "Autoloading Grunt tasks concurrently with optimized assets",
+    "url": "https://sandro-keil.de/blog/autoloading-grunt-tasks-concurrently-with-optimized-assets/",
+    "datePublished": "2015-07-13T19:06:36.000Z",
+    "dateModified": "2015-07-15T16:16:35.000Z",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://sandro-keil.de/blog/content/images/2015/07/construction.jpg",
+        "width": 826,
+        "height": 450
+    },
+    "keywords": "build",
+    "description": "Learn how to make your Grunt tasks faster and have a fully fledged front-end build process with optimized assets and code quality assurance tools.",
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://sandro-keil.de/blog/"
+    }
+}
+    </script>
+
+    <script src="/blog/public/ghost-sdk.min.js?v=30fcd7d37c"></script>
+<script>
+ghost.init({
+	clientId: "ghost-frontend",
+	clientSecret: "4f941e65c7a0"
+});
+</script>
+    <meta name="generator" content="Ghost 2.0" />
+    <link rel="alternate" type="application/rss+xml" title="Blog by Sandro Keil" href="https://sandro-keil.de/blog/rss/" />
+    <script type="application/ld+json">
+    {
+      "@context" : "http://schema.org",
+      "@type": "Person",
+      "name": "Sandro Keil",
+      "image": "https://sandro-keil.de/blog/assets/img/sandro-keil.jpg",
+      "url": "https://sandro-keil.de",
+      "sameAs" : [
+          "https://twitter.com/SandroKeil",
+          "https://www.xing.com/profile/Sandro_Keil",
+          "https://github.com/sandrokeil"
+        ]
+      }
+    }
+    </script>
+</head>
+<body class="post-template tag-build">
+
+    <div class="site-wrapper">
+
+        
+
+<header class="site-header outer">
+    <div class="inner">
+        <nav class="site-nav">
+    <div class="site-nav-left">
+                <a class="site-nav-logo" href="https://sandro-keil.de/blog">Blog by Sandro Keil</a>
+            <ul class="nav" role="menu">
+    <li class="nav-talks" role="menuitem"><a href="https://sandro-keil.de/blog/tag/talks/">Talks</a></li>
+    <li class="nav-imprint" role="menuitem"><a href="https://sandro-keil.de/blog/imprint/">Imprint</a></li>
+    <li class="nav-privacy" role="menuitem"><a href="https://sandro-keil.de/blog/privacy/">Privacy</a></li>
+    <li class="nav-about-me" role="menuitem"><a href="https://sandro-keil.de">About me</a></li>
+</ul>
+
+    </div>
+    <div class="site-nav-right">
+        <div class="social-links">
+            <a href="#" class="social-link" id="search-btn"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 50 50" version="1.1" width="32px" height="32px">
+    <g id="surface1">
+        <path style=" " d="M 21 3 C 11.621094 3 4 10.621094 4 20 C 4 29.378906 11.621094 37 21 37 C 24.710938 37 28.140625 35.804688 30.9375 33.78125 L 44.09375 46.90625 L 46.90625 44.09375 L 33.90625 31.0625 C 36.460938 28.085938 38 24.222656 38 20 C 38 10.621094 30.378906 3 21 3 Z M 21 5 C 29.296875 5 36 11.703125 36 20 C 36 28.296875 29.296875 35 21 35 C 12.703125 35 6 28.296875 6 20 C 6 11.703125 12.703125 5 21 5 Z "/>
+    </g>
+</svg>
+</a>
+                <a class="social-link social-link-tw" href="https://twitter.com/SandroKeil" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M30.063 7.313c-.813 1.125-1.75 2.125-2.875 2.938v.75c0 1.563-.188 3.125-.688 4.625a15.088 15.088 0 0 1-2.063 4.438c-.875 1.438-2 2.688-3.25 3.813a15.015 15.015 0 0 1-4.625 2.563c-1.813.688-3.75 1-5.75 1-3.25 0-6.188-.875-8.875-2.625.438.063.875.125 1.375.125 2.688 0 5.063-.875 7.188-2.5-1.25 0-2.375-.375-3.375-1.125s-1.688-1.688-2.063-2.875c.438.063.813.125 1.125.125.5 0 1-.063 1.5-.25-1.313-.25-2.438-.938-3.313-1.938a5.673 5.673 0 0 1-1.313-3.688v-.063c.813.438 1.688.688 2.625.688a5.228 5.228 0 0 1-1.875-2c-.5-.875-.688-1.813-.688-2.75 0-1.063.25-2.063.75-2.938 1.438 1.75 3.188 3.188 5.25 4.25s4.313 1.688 6.688 1.813a5.579 5.579 0 0 1 1.5-5.438c1.125-1.125 2.5-1.688 4.125-1.688s3.063.625 4.188 1.813a11.48 11.48 0 0 0 3.688-1.375c-.438 1.375-1.313 2.438-2.563 3.188 1.125-.125 2.188-.438 3.313-.875z"/></svg>
+</a>
+        </div>
+            <a class="rss-button" href="https://feedly.com/i/subscription/feed/https://sandro-keil.de/blog/rss/" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="6.18" cy="17.82" r="2.18"/><path d="M4 4.44v2.83c7.03 0 12.73 5.7 12.73 12.73h2.83c0-8.59-6.97-15.56-15.56-15.56zm0 5.66v2.83c3.9 0 7.07 3.17 7.07 7.07h2.83c0-5.47-4.43-9.9-9.9-9.9z"/></svg>
+</a>
+    </div>
+</nav>
+    </div>
+</header>
+
+
+<main id="site-main" class="site-main outer">
+    <div class="inner">
+
+        <article class="post-full post tag-build ">
+
+            <header class="post-full-header">
+                <section class="post-full-meta">
+                    <time class="post-full-meta-date" datetime="2015-07-13">13 July 2015</time>
+                        <span class="date-divider">/</span> <a href="/blog/tag/build/">build</a>
+                </section>
+                <h1 class="post-full-title">Autoloading Grunt tasks concurrently with optimized assets</h1>
+            </header>
+
+            <figure class="post-full-image" style="background-image: url(/blog/content/images/2015/07/construction.jpg)">
+            </figure>
+
+            <section class="post-full-content">
+                <div class="post-content">
+                    <p>Currently, I have more to deal with front-end stuff, because of creating a responsive web layout for a popular shop. We use a Grunt build process and the template engine Handlebarsjs to create a style guide and the several pages. On Linux is the build performance ok, but on Windows it's slow. In this post I will share my experience how making the build process faster with autoloading of Grunt tasks and to parallelize as much as possible. I show you how to build a fully fledged front-end build process with optimized assets and how to ensure the code quality. The <a href="https://github.com/sandrokeil/grunt-optimized-build-example" title="Download example">source code can be downloaded on GitHub</a>. This is also a small tutorial how you can build a new web layout without changing existing code and about front-end design patterns. This could be useful for legacy applications.</p>
+<h2 id="gruntdependencies">Grunt dependencies</h2>
+<p>Besides the general Grunt plugins (see package.json for full list) we focus to <code>grunt-assemble</code>, <code>grunt-uncss</code>, <code>jit-grunt</code>, <code>grunt-newer</code>, <code>grunt-concurrent</code>, <code>grunt-combine-media-queries</code>, <code>grunt-processhtml</code>, <code>grunt-autoprefixer</code>, <code>grunt-jscs</code>, <code>grunt-contrib-jshint</code>, <code>grunt-htmlhint</code> and <code>grunt-contrib-csslint</code>.</p>
+<p><a href="https://github.com/assemble/grunt-assemble" title="Visit grunt-assemble plugin page">grunt-assemble:</a> Compiles the Handlebarsjs templates to HTML files. So you can split your templates in several partails which can reflect your PHP template structure.</p>
+<p><a href="https://github.com/addyosmani/grunt-uncss" title="Visit grunt-uncss plugin page">grunt-uncss:</a> Removes not used CSS. This can be useful if you use a CSS framework but be aware, you have to set your CSS classes which are set from JS to the ignore list. This can be hard to maintain.</p>
+<p><a href="https://github.com/shootaroo/jit-grunt" title="Visit jit-grunt page">jit-grunt:</a> If you have many plugins like in this example, the Grunt loading task is slow. The JIT(Just In Time) plugin loader for Grunt solves that problem. Only current used plugins are loaded, so yes you have autoloading here.</p>
+<p><a href="https://github.com/tschaub/grunt-newer" title="Visit grunt-newer plugin page">grunt-newer:</a> This plugin is useful for your assets, because only Grunt tasks are executed which source files modified since the last successful run.</p>
+<p><a href="https://github.com/sindresorhus/grunt-concurrent" title="Visit grunt-concurrent plugin page">grunt-concurrent :</a> You can drastically improve your build process time, if you run tasks in parallel. This plugin comes to the rescue.</p>
+<p><a href="https://github.com/frontendfriends/grunt-combine-mq" title="Visit  grunt-combine-mq plugin page">grunt-combine-mq:</a> Combines the media queries of severall CSS classes to one media query. So you can write your media queries directly to the CSS class to keep the overview.</p>
+<p><a href="https://github.com/dciccale/grunt-processhtml" title="Visit grunt-processhtml plugin page">grunt-processhtml:</a> This is useful if you want to test how your application performs with the minified files. This plugin replaces every single file in the templates with the minified version.</p>
+<p><a href="https://github.com/nDmitry/grunt-autoprefixer" title="Visit grunt-autoprefixer plugin page">grunt-autoprefixer:</a> Don't write the CSS vendor prefixes manually. This plugin does the job better than you.</p>
+<p><a href="https://github.com/jscs-dev/grunt-jscs" title="Visit grunt-jscs plugin page">grunt-jscs:</a> JSCS is a JavaScript Code Style checker and ensures uniform code.</p>
+<p><a href="https://github.com/gruntjs/grunt-contrib-jshint" title="Visit grunt-contrib-jshint plugin page">grunt-contrib-jshint:</a> JSHint is a program that flags suspicious usage in JS scripts. There is also an <a href="http://jshint.com/" title="Visit JSHint.com">online version</a> available.</p>
+<p><a href="https://github.com/yaniswang/grunt-htmlhint" title="Visit grunt-htmlhint plugin page">grunt-htmlhint:</a> HTMLHint is a static code analysis tool for HTML and ensures uniform code. There is also an <a href="http://htmlhint.com/" title="Visit HTMLHint.net">online version</a> available.</p>
+<p><a href="https://github.com/gruntjs/grunt-contrib-csslint" title="Visit grunt-contrib-csslint plugin page">grunt-contrib-csslint:</a> Finds wrong CSS code and gives recommendations. There is also an <a href="http://csslint.net/" title="Visit CSSlint.net">online version</a> (Will hurt your feelings) available.</p>
+<h2 id="bowerdependencies">Bower dependencies</h2>
+<p>For this example I use Twitter Bootstrap SASS and some jQuery plugins. The <em>resolutions</em> definition is useful if you have dependency version conflicts. If some componenent want jQuery 1.10.0 and you have jQuery 1.11.3, then define it here.</p>
+<blockquote>
+<p>I don't use range operators to pin a specific version of the component, because there is no lock file like Composer has. The goal is, that every developer gets the same versions.</p>
+</blockquote>
+<pre><code>&quot;dependencies&quot;: {
+    &quot;bootstrap-sass-official&quot;: &quot;3.3.5&quot;,
+    &quot;FitVids&quot;: &quot;1.1.0&quot;,
+    &quot;jquery&quot;: &quot;1.11.3&quot;,
+    &quot;scrollup&quot;: &quot;2.4.1&quot;
+  },
+  &quot;resolutions&quot;: {
+    &quot;jquery&quot;: &quot;1.11.3&quot;
+  }
+</code></pre>
+<h2 id="optimizebuildprocess">Optimize build process</h2>
+<p>For a full list of the Grunt tasks please see gruntfile.js. It's necessary that you know which tasks depends on each other. For example: you can't minify your CSS files until the SASS task was executed before. Let's take a look at the <em>concurrent</em> config. The <em>build</em> settings compiles the templates, the CSS sprites and concatenates files in parallel. There is no collision between these tasks. The <em>optimize</em> settings minifies JS and removes useless CSS. The <em>server</em> settings rewrites the HTML files, so that the minified versions are used and minifies the CSS. The <em>dist</em> settings creates the CSS files and optimizes images and svg files. The <em>qa</em> settings checks the code style for HTML, CSS and JS also in parallel.</p>
+<pre><code>module.exports = function( grunt ) {
+
+  // ...
+  grunt.initConfig( {
+
+    // ...
+    // Run some tasks in parallel to speed up build process
+    concurrent: {
+      build: [
+        'assemble',
+        'sprite',
+        'concat:app',
+      ],
+      optimize: [
+        'uglify:app',
+        'uncss'
+      ],
+      server: [
+        'processhtml:optimize',
+        'cssmin:optimize'
+      ],
+      dist: [
+        'sass:dist',
+        'imagemin',
+        'svgmin'
+      ],
+      qa: [
+        'htmlhint',
+        'jscs',
+        'jshint',
+        'csslint'
+      ]
+    }
+  } );
+
+};
+</code></pre>
+<p>The order of these settings are independent. Important are how the Grunt tasks use them. Let's have a look at the main Grunt tasks. The <em>build</em> task builds the complete project from scratch. Every task uses the <em>build</em> task to ensure the latest version of the files. The <em>optimize</em> task minifies JS and CSS and rewrites HTML pages for production usage. The <em>qa</em> task checks code violations. These tasks use several <em>concurrent</em> config settings from above to run the tasks in parallel. The <em>serve</em> task has a special target <em>dist</em>. If this is used, you get the optimized version and the server uses gzip compression for the files. This is great because you can simulate live conditions.</p>
+<pre><code>module.exports = function( grunt ) {
+
+    // Time how long tasks take. Can help when optimizing build times
+    require( 'time-grunt' )( grunt );
+
+    // Load grunt tasks automatically just in time
+    require( 'jit-grunt' )( grunt, {
+        sprite: 'grunt-spritesmith',
+        cmq: 'grunt-combine-media-queries'
+    } );
+
+    // ...
+
+    grunt.registerTask( 'serve',
+        'start the server and preview your src, --allow-remote for remote access',
+        function( target ) {
+            if ( grunt.option( 'allow-remote' ) ) {
+                grunt.config.set( 'connect.options.hostname', '0.0.0.0' );
+            }
+            if ( target === 'dist' ) {
+                return grunt.task.run( [ 'optimize', 'connect:dist:keepalive' ] );
+            }
+
+            grunt.task.run( [
+                'build',
+                'connect:livereload',
+                'watch'
+            ] );
+        } );
+
+    // build project
+    grunt.registerTask( 'build', [
+        'clean:server',
+        'concurrent:build',
+        'concurrent:dist',
+        'cssmin:dist',
+        'autoprefixer',
+        'copy'
+    ] );
+
+    // minify js and css and rewrite page for production usage
+    grunt.registerTask( 'optimize', [
+        'build',
+        'concurrent:optimize',
+        'cmq',
+        'concurrent:server'
+    ] );
+
+    // check code style violations with Grunt
+    grunt.registerTask( 'qa', 'check code style for violations', function( target ) {
+            grunt.task.run( [
+                'build',
+                'concurrent:qa'
+            ] );
+        } );
+};
+</code></pre>
+<h2 id="codequalityassurancetools">Code quality assurance tools</h2>
+<p>It's recommended to configure the QA tools before you start coding. Otherwise it's a lot of work to fix the code. You should use a standard code style like jQuery. For JSHint settings see <em>.jshintrc</em>, for JSCS see <em>.jscsrc</em>, for HTMLHint see <em>.htmlhintrc</em> and for CSSLint see <em>.csslintrc</em> file in the root of the repository. It's important to use the value 2 for a setting of the CSSLint configuration. This value means that the process exists with an error and the build is broken. An explanation of the JS errors has <a href="https://jslinterrors.com/" title="Visit JSLint Error Explanations">jslinterrors.com</a>, for HTMLHint errors see <a href="https://github.com/yaniswang/HTMLHint/wiki/Rules" title="Visit HTMLHint Rules">HTMLHint rules</a> and for CSSLint errors see <a href="https://github.com/CSSLint/csslint/wiki/Rules" title="Visit CSSLint Rules">CSSLint rules</a>.</p>
+<blockquote>
+<p>Note that some settings may be stricter in your project. Here it's only an example. I recommend to use the defaults and only disable rules if it is necessary and you know what you do.</p>
+</blockquote>
+<h3 id="gitprecommithook">Git pre-commit hook</h3>
+<p>To ensure the quality of the code, you can use the following Git pre-commit hook. If an error occurs, you are not able to commit the files. This is very useful. It is also possible to configure your IDE to check the code style depending on your configuration and you can also use a Docker container for that.</p>
+<pre><code>#!/usr/bin/env bash
+# Git pre-commit hook to confirm code style
+# Install under: .git/hooks/pre-commit (and ensure it is executable)
+
+PROJECTROOT=`echo $(cd ${0%/*}/../../ &amp;&amp; pwd -P)`/
+
+cd $PROJECTROOT
+grunt --no-color qa
+</code></pre>
+<h2 id="templatesandprocesshtmlinstruction">Templates and processhtml instruction</h2>
+<p>The <code>layout.hbs</code> file looks very easy. With processhtml and the Grunt optimize task you get optimized pages to simulate live conditions. You must only define a HTML comment with a build instruction <em>build:css:optimize</em>.</p>
+<pre><code>&lt;!doctype html&gt;
+&lt;html class=&quot;no-js&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;utf-8&quot;/&gt;
+    &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;IE=edge&quot;/&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, user-scalable=0&quot;/&gt;
+    &lt;meta name=&quot;HandheldFriendly&quot; content=&quot;True&quot;/&gt;
+    &lt;title&gt;Grunt Example&lt;/title&gt;
+    &lt;link rel=&quot;shortcut icon&quot; href=&quot;/favicon.ico&quot;/&gt;
+
+    &lt;!-- build:css:optimize /css/main.min.css --&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;/css/main.css&quot;/&gt;
+    &lt;!-- /build --&gt;
+&lt;/head&gt;
+&lt;body&gt;
+{{&gt; header }}
+&lt;div class=&quot;container&quot;&gt;
+    {{&gt; body }}
+&lt;/div&gt;
+{{&gt; footer }}
+{{&gt; body-script }}
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>The <code>body-script.hbs</code> file contains the several JS files and the processhtml instruction <em>build:js:optimize</em> to use the one file minified version.</p>
+<pre><code>&lt;!-- build:js:optimize /js/main.min.js --&gt;
+&lt;!--
+  IF YOU ADD ONE FILE HERE YOU MUST ADD THIS FILE TO GRUNT TASK concat:app TOO and maintain order !!!
+--&gt;
+&lt;script src=&quot;/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/dropdown.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;/bower_components/FitVids/jquery.fitvids.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;/bower_components/scrollup/src/jquery.scrollUp.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;/js/main.js&quot;&gt;&lt;/script&gt;
+&lt;!-- /build --&gt;
+</code></pre>
+<h2 id="pagespartialsandstyleguide">Pages, partials and style guide</h2>
+<p><em>We’re not designing pages, we’re designing systems of components</em> says Stephen Hay. So it's time to introduce <a href="http://bradfrost.com/blog/post/atomic-web-design/">Atomic Web Design</a>. This is really cool, because you build design modules which can be combined. If you not sure which CSS naming standard you should use, I recommend <a href="https://github.com/redaxmedia/ncss">Named Cascading Style Sheets - NCSS</a>. Ok, let's go back to the topic. Independent of this, Twitter Bootstrap has also components. Partials helps you to reuse components on other sites and the style guide helps to keep the overview of your layout. It's also great to see how some component is implemented and which kind of design modules are available.</p>
+<h3 id="handlebarsjstemplatedrawbacks">Handlebarsjs template drawbacks</h3>
+<p>If you use this approach to redesign your layout, you have to convert all the Handlebarsjs templates to your favorite PHP template engine. Another approach is <a href="http://patternlab.io/" title="Visit PatternLab Website">PatternLab with Atomic Design</a>. So it depends on your legacy code base, if you can integrate the front-end build process to your project or to use an own project for this.</p>
+<h2 id="dockerforgruntbuildandserve">Docker for Grunt build and serve</h2>
+<p>I don't want and I don't have the time to install all the front-end tools on my machine, so I use the <em>digitallyseamless/nodejs-bower-grunt</em> Docker image. You can use the following bash script <code>docker-grunt</code> to run grunt, node and npm.</p>
+<pre><code>#!/usr/bin/env bash
+docker run -i -t=false -p 35729:35729 -p 9000:9000 --rm -v $(pwd)/:/data digitallyseamless/nodejs-bower-grunt $@
+</code></pre>
+<p>Then you can run the commands from the root of the repository. Is this easy, isn't it? Thank you Docker.</p>
+<pre><code>$: docker-grunt npm install
+$: docker-grunt bower --allow-root install
+$: docker-grunt grunt qa
+$: docker-grunt grunt serve --allow-remote
+$: docker-grunt grunt serve:dist --allow-remote
+</code></pre>
+<p>Note that <em>serve:dist</em> uses the minified versions. Another hint is to use Google Chrome Developer Toolbar to check several resolutions and to emulate mobile connections e.g. 2G. You can browse the pages under <code>http://localhost:9000/page/</code>.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>You have learned to make your front-end build process faster and which essential components are needed to achieve this goal. You ensure the high quality of your code and keep the assets as small as possible. You have a style guide of your layout, to make it easier for other developers how to use it. Last but not least, you also see that Docker helps you to develop faster, because you don't waste your time with the installation of tools.</p>
+<p>I hope this post helps you to push your front-end build process to a higher level. If you have any suggestions or recommendations or something else, please leave a comment.</p>
+
+                </div>
+            </section>
+
+
+            <footer class="post-full-footer">
+
+
+                    
+<section class="author-card">
+        <img class="author-profile-image" src="/blog/content/images/2018/08/ipc.jpg" alt="Sandro Keil" />
+    <section class="author-card-content">
+        <h4 class="author-card-name"><a href="/blog/author/sandrokeil/">Sandro Keil</a></h4>
+            <p>Sandro Keil is a Senior Software Developer and IT-Consultant and has more than 15 years experience in web development as Full Stack Developer.</p>
+    </section>
+</section>
+<div class="post-full-footer-right">
+    <a class="author-card-button" href="/blog/author/sandrokeil/">Read More</a>
+</div>
+
+
+            </footer>
+
+
+        </article>
+
+    </div>
+</main>
+
+<aside class="read-next outer">
+    <div class="inner">
+        <div class="read-next-feed">
+
+                <article class="post-card post tag-php">
+        <a class="post-card-image-link" href="/blog/phpunit-with-peek-and-poke-no-more-reflection/">
+            <div class="post-card-image" style="background-image: url(/blog/content/images/2015/08/space-telescope-mirror.jpg)"></div>
+        </a>
+    <div class="post-card-content">
+        <a class="post-card-content-link" href="/blog/phpunit-with-peek-and-poke-no-more-reflection/">
+            <header class="post-card-header">
+                    <span class="post-card-tags">PHP</span>
+                <h2 class="post-card-title">PHPUnit tests with Peek and Poke - No more Reflection</h2>
+            </header>
+            <section class="post-card-excerpt">
+                <p>Sometimes you want to test your protected or private methods or need access to a class property. This can be achieved via the PHP ReflectionClass, but it's some lines of code. Sebastian Bergmann</p>
+            </section>
+        </a>
+        <footer class="post-card-meta">
+
+            <ul class="author-list">
+                <li class="author-list-item">
+
+                    <div class="author-name-tooltip">
+                        Sandro Keil
+                    </div>
+
+                        <a href="/blog/author/sandrokeil/" class="static-avatar"><img class="author-profile-image" src="/blog/content/images/2018/08/ipc.jpg" alt="Sandro Keil" /></a>
+                </li>
+            </ul>
+
+            <span class="reading-time">2 min read</span>
+
+        </footer>
+    </div>
+</article>
+
+                <article class="post-card post tag-php featured">
+        <a class="post-card-image-link" href="/blog/domain-driven-design-hexagonal-architecture-event-sourcing-oh-my/">
+            <div class="post-card-image" style="background-image: url(/blog/content/images/2015/05/ddd-1.jpg)"></div>
+        </a>
+    <div class="post-card-content">
+        <a class="post-card-content-link" href="/blog/domain-driven-design-hexagonal-architecture-event-sourcing-oh-my/">
+            <header class="post-card-header">
+                    <span class="post-card-tags">PHP</span>
+                <h2 class="post-card-title">Hexagonal Architecture, Domain Driven Design, Event Sourcing, Oh, My!</h2>
+            </header>
+            <section class="post-card-excerpt">
+                <p>In the past weeks I've read something about Domain Driven Design and Hexagonal Architecture. And the more I've read, the more I know that I know nothing. In the end I ended up</p>
+            </section>
+        </a>
+        <footer class="post-card-meta">
+
+            <ul class="author-list">
+                <li class="author-list-item">
+
+                    <div class="author-name-tooltip">
+                        Sandro Keil
+                    </div>
+
+                        <a href="/blog/author/sandrokeil/" class="static-avatar"><img class="author-profile-image" src="/blog/content/images/2018/08/ipc.jpg" alt="Sandro Keil" /></a>
+                </li>
+            </ul>
+
+            <span class="reading-time">2 min read</span>
+
+        </footer>
+    </div>
+</article>
+
+        </div>
+    </div>
+</aside>
+
+<div class="floating-header">
+    <div class="floating-header-logo">
+        <a href="https://sandro-keil.de/blog">
+            <span>Blog by Sandro Keil</span>
+        </a>
+    </div>
+    <span class="floating-header-divider">&mdash;</span>
+    <div class="floating-header-title">Autoloading Grunt tasks concurrently with optimized assets</div>
+    <div class="floating-header-share">
+        <div class="floating-header-share-label">Share this <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M7.5 15.5V4a1.5 1.5 0 1 1 3 0v4.5h2a1 1 0 0 1 1 1h2a1 1 0 0 1 1 1H18a1.5 1.5 0 0 1 1.5 1.5v3.099c0 .929-.13 1.854-.385 2.748L17.5 23.5h-9c-1.5-2-5.417-8.673-5.417-8.673a1.2 1.2 0 0 1 1.76-1.605L7.5 15.5zm6-6v2m-3-3.5v3.5m6-1v2"/>
+</svg>
+</div>
+        <a class="floating-header-share-tw" href="https://twitter.com/share?text=Autoloading%20Grunt%20tasks%20concurrently%20with%20optimized%20assets&amp;url=https://sandro-keil.de/blog/autoloading-grunt-tasks-concurrently-with-optimized-assets/"
+            onclick="window.open(this.href, 'share-twitter', 'width=550,height=235');return false;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M30.063 7.313c-.813 1.125-1.75 2.125-2.875 2.938v.75c0 1.563-.188 3.125-.688 4.625a15.088 15.088 0 0 1-2.063 4.438c-.875 1.438-2 2.688-3.25 3.813a15.015 15.015 0 0 1-4.625 2.563c-1.813.688-3.75 1-5.75 1-3.25 0-6.188-.875-8.875-2.625.438.063.875.125 1.375.125 2.688 0 5.063-.875 7.188-2.5-1.25 0-2.375-.375-3.375-1.125s-1.688-1.688-2.063-2.875c.438.063.813.125 1.125.125.5 0 1-.063 1.5-.25-1.313-.25-2.438-.938-3.313-1.938a5.673 5.673 0 0 1-1.313-3.688v-.063c.813.438 1.688.688 2.625.688a5.228 5.228 0 0 1-1.875-2c-.5-.875-.688-1.813-.688-2.75 0-1.063.25-2.063.75-2.938 1.438 1.75 3.188 3.188 5.25 4.25s4.313 1.688 6.688 1.813a5.579 5.579 0 0 1 1.5-5.438c1.125-1.125 2.5-1.688 4.125-1.688s3.063.625 4.188 1.813a11.48 11.48 0 0 0 3.688-1.375c-.438 1.375-1.313 2.438-2.563 3.188 1.125-.125 2.188-.438 3.313-.875z"/></svg>
+        </a>
+        <a class="floating-header-share-fb" href="https://www.facebook.com/sharer/sharer.php?u=https://sandro-keil.de/blog/autoloading-grunt-tasks-concurrently-with-optimized-assets/"
+            onclick="window.open(this.href, 'share-facebook','width=580,height=296');return false;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M19 6h5V0h-5c-3.86 0-7 3.14-7 7v3H8v6h4v16h6V16h5l1-6h-6V7c0-.542.458-1 1-1z"/></svg>
+        </a>
+    </div>
+    <progress id="reading-progress" class="progress" value="0">
+        <div class="progress-container">
+            <span class="progress-bar"></span>
+        </div>
+    </progress>
+</div>
+
+
+
+
+        <footer class="site-footer outer">
+            <div class="site-footer-content inner">
+                <section class="copyright"><a href="https://sandro-keil.de/blog">Blog by Sandro Keil</a> &copy; 2024</section>
+                <nav class="site-footer-nav">
+                    <a href="https://sandro-keil.de/blog">Latest Posts</a>
+                    
+                    <a href="https://twitter.com/SandroKeil" target="_blank" rel="noopener">Twitter</a>
+                    <a href="https://sandro-keil.de/blog/2014/12/10/casperion-ghost-theme/" target="_blank" title="Casperion Ghost Theme" rel="noopener">Casperion Ghost Theme</a>
+                </nav>
+            </div>
+        </footer>
+
+    </div>
+
+
+    <script type="text/javascript" src="/blog/assets/js/jquery-3.2.1.min.js?v=30fcd7d37c"></script>
+
+
+    <script>
+
+// NOTE: Scroll performance is poor in Safari
+// - this appears to be due to the events firing much more slowly in Safari.
+//   Dropping the scroll event and using only a raf loop results in smoother
+//   scrolling but continuous processing even when not scrolling
+$(document).ready(function () {
+    // Start fitVids
+    var $postContent = $(".post-full-content");
+    $postContent.fitVids();
+    // End fitVids
+
+    var progressBar = document.querySelector('#reading-progress');
+    var header = document.querySelector('.floating-header');
+    var title = document.querySelector('.post-full-title');
+
+    var lastScrollY = window.scrollY;
+    var lastWindowHeight = window.innerHeight;
+    var lastDocumentHeight = $(document).height();
+    var ticking = false;
+
+    function onScroll() {
+        lastScrollY = window.scrollY;
+        requestTick();
+    }
+
+    function onResize() {
+        lastWindowHeight = window.innerHeight;
+        lastDocumentHeight = $(document).height();
+        requestTick();
+    }
+
+    function requestTick() {
+        if (!ticking) {
+            requestAnimationFrame(update);
+        }
+        ticking = true;
+    }
+
+    function update() {
+        var trigger = title.getBoundingClientRect().top + window.scrollY;
+        var triggerOffset = title.offsetHeight + 35;
+        var progressMax = lastDocumentHeight - lastWindowHeight;
+
+        // show/hide floating header
+        if (lastScrollY >= trigger + triggerOffset) {
+            header.classList.add('floating-active');
+        } else {
+            header.classList.remove('floating-active');
+        }
+
+        progressBar.setAttribute('max', progressMax);
+        progressBar.setAttribute('value', lastScrollY);
+
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', onScroll, {passive: true});
+    window.addEventListener('resize', onResize, false);
+
+    update();
+
+});
+</script>
+
+
+    <script>
+        (function ($) {
+            'use strict';
+
+            $( document ).ready( function () {
+                if ($("pre code")[0]) {
+                    $.getScript("/blog/assets/js/highlight.min.js?v=30fcd7d37c", function() {
+                        $("pre code").each(function (i, e) {
+                            hljs.highlightBlock(e)
+                        });
+                    });
+                }
+            } );
+        }( jQuery ));
+    </script>
+    
+
+    <div id="search-overlay" class="search-overlay block">
+        <div class="centered">
+            <div id='search-box' class="search-box">
+                <a href="#" id="close-btn" class="close-btn"><?xml version="1.0"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" fill="#ffffff" width="60px" height="60px">
+    <path d="M 7 4 C 6.744125 4 6.4879687 4.0974687 6.2929688 4.2929688 L 4.2929688 6.2929688 C 3.9019687 6.6839688 3.9019687 7.3170313 4.2929688 7.7070312 L 11.585938 15 L 4.2929688 22.292969 C 3.9019687 22.683969 3.9019687 23.317031 4.2929688 23.707031 L 6.2929688 25.707031 C 6.6839688 26.098031 7.3170313 26.098031 7.7070312 25.707031 L 15 18.414062 L 22.292969 25.707031 C 22.682969 26.098031 23.317031 26.098031 23.707031 25.707031 L 25.707031 23.707031 C 26.098031 23.316031 26.098031 22.682969 25.707031 22.292969 L 18.414062 15 L 25.707031 7.7070312 C 26.098031 7.3170312 26.098031 6.6829688 25.707031 6.2929688 L 23.707031 4.2929688 C 23.316031 3.9019687 22.682969 3.9019687 22.292969 4.2929688 L 15 11.585938 L 7.7070312 4.2929688 C 7.5115312 4.0974687 7.255875 4 7 4 z" fill="#ffffff"/>
+</svg>
+</a>
+                <form id="search-form" class="search-form" onsubmit="return false;">
+                    <input id="search-field" class="search-field" name="q" placeholder="Search" type="text"/>
+                </form>
+            </div>
+            <section class="search-results" id="results"></section>
+        </div>
+    </div>
+    <script type="text/javascript" src="/blog/assets/js/casperion.min.js?v=30fcd7d37c"></script>
+</body>
+</html>

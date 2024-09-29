@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 583 286" preserveAspectRatio="xMidYMin"
+     version="1.1">
+    <defs/>
+    <g transform="translate(0.5,0.5)">
+        <rect x="1" y="1" width="260" height="240" fill="#f5f5f5" stroke="#666666" pointer-events="none"/>
+        <g transform="translate(76.5,8.5)">
+            <switch>
+                <foreignObject style="overflow:visible;" pointer-events="all" width="108" height="36"
+                               requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                    <div xmlns="http://www.w3.org/1999/xhtml"
+                         style="display: inline-block; font-size: 32px; font-family: Helvetica; color: black; line-height: 1.2; vertical-align: top; width: 110px; white-space: nowrap; word-wrap: normal; font-weight: bold; text-align: center;">
+                        <div xmlns="http://www.w3.org/1999/xhtml"
+                             style="display:inline-block;text-align:inherit;text-decoration:inherit;">
+                            <div>
+                                <span style="line-height: 1.2">strlen()</span>
+                                <br/>
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="54" y="34" fill="black" text-anchor="middle" font-size="32px" font-family="Helvetica"
+                      font-weight="bold">[Not supported by viewer]
+                </text>
+            </switch>
+        </g>
+        <rect x="1" y="181" width="260" height="60" fill="#dae8fc" stroke="#000000" pointer-events="none"/>
+        <g transform="translate(31.5,197.5)">
+            <switch>
+                <foreignObject style="overflow:visible;" pointer-events="all" width="198" height="26"
+                               requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                    <div xmlns="http://www.w3.org/1999/xhtml"
+                         style="display: inline-block; font-size: 24px; font-family: Helvetica; color: black; line-height: 1.2; vertical-align: top; width: 200px; white-space: nowrap; word-wrap: normal; text-align: center;">
+                        <div xmlns="http://www.w3.org/1999/xhtml"
+                             style="display:inline-block;text-align:inherit;text-decoration:inherit;">Profiling Overhead
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="99" y="25" fill="black" text-anchor="middle" font-size="24px" font-family="Helvetica">Profiling
+                    Overhead
+                </text>
+            </switch>
+        </g>
+        <g transform="translate(85.5,257.5)">
+            <switch>
+                <foreignObject style="overflow:visible;" pointer-events="all" width="90" height="26"
+                               requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                    <div xmlns="http://www.w3.org/1999/xhtml"
+                         style="display: inline-block; font-size: 24px; font-family: Helvetica; color: rgb(41, 178, 143); line-height: 1.2; vertical-align: top; width: 90px; white-space: nowrap; word-wrap: normal; font-weight: bold; text-align: center;">
+                        <div xmlns="http://www.w3.org/1999/xhtml"
+                             style="display:inline-block;text-align:inherit;text-decoration:inherit;">PHP 5.6
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="45" y="25" fill="#29b28f" text-anchor="middle" font-size="24px" font-family="Helvetica"
+                      font-weight="bold">PHP 5.6
+                </text>
+            </switch>
+        </g>
+        <rect x="321" y="101" width="260" height="140" fill="#f5f5f5" stroke="#666666" pointer-events="none"/>
+        <g transform="translate(396.5,108.5)">
+            <switch>
+                <foreignObject style="overflow:visible;" pointer-events="all" width="108" height="36"
+                               requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                    <div xmlns="http://www.w3.org/1999/xhtml"
+                         style="display: inline-block; font-size: 32px; font-family: Helvetica; color: black; line-height: 1.2; vertical-align: top; width: 110px; white-space: nowrap; word-wrap: normal; font-weight: bold; text-align: center;">
+                        <div xmlns="http://www.w3.org/1999/xhtml"
+                             style="display:inline-block;text-align:inherit;text-decoration:inherit;">
+                            <div>
+                                <span style="line-height: 1.2">strlen()</span>
+                                <br/>
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="54" y="34" fill="black" text-anchor="middle" font-size="32px" font-family="Helvetica"
+                      font-weight="bold">[Not supported by viewer]
+                </text>
+            </switch>
+        </g>
+        <rect x="321" y="181" width="260" height="60" fill="#dae8fc" stroke="#000000" pointer-events="none"/>
+        <g transform="translate(351.5,197.5)">
+            <switch>
+                <foreignObject style="overflow:visible;" pointer-events="all" width="198" height="26"
+                               requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                    <div xmlns="http://www.w3.org/1999/xhtml"
+                         style="display: inline-block; font-size: 24px; font-family: Helvetica; color: black; line-height: 1.2; vertical-align: top; width: 200px; white-space: nowrap; word-wrap: normal; text-align: center;">
+                        <div xmlns="http://www.w3.org/1999/xhtml"
+                             style="display:inline-block;text-align:inherit;text-decoration:inherit;">Profiling Overhead
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="99" y="25" fill="black" text-anchor="middle" font-size="24px" font-family="Helvetica">Profiling
+                    Overhead
+                </text>
+            </switch>
+        </g>
+        <g transform="translate(405.5,257.5)">
+            <switch>
+                <foreignObject style="overflow:visible;" pointer-events="all" width="90" height="26"
+                               requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                    <div xmlns="http://www.w3.org/1999/xhtml"
+                         style="display: inline-block; font-size: 24px; font-family: Helvetica; color: rgb(41, 178, 143); line-height: 1.2; vertical-align: top; width: 90px; white-space: nowrap; word-wrap: normal; font-weight: bold; text-align: center;">
+                        <div xmlns="http://www.w3.org/1999/xhtml"
+                             style="display:inline-block;text-align:inherit;text-decoration:inherit;">PHP 7.0
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="45" y="25" fill="#29b28f" text-anchor="middle" font-size="24px" font-family="Helvetica"
+                      font-weight="bold">PHP 7.0
+                </text>
+            </switch>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,891 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>A new era of PHP profiler by Sandro Keil</title>
+    <meta name="description" content="The new PHP profiler revolutionize the analysis of PHP apps. Take a closer look to Blackfire, Tideways and Zend Z-Ray">
+    <meta name="author" content="Sandro Keil">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    <link rel="canonical" href="https://sandro-keil.de/slides/a-new-era-of-php-profiler/#/">
+    <link rel="shortlink" href="https://sandro-keil.de/slides/a-new-era-of-php-profiler/#/">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="twitter:site" content="@SandroKeil">
+    <meta name="twitter:creator" content="@SandroKeil">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/apple-icon.png">
+
+    <link rel="stylesheet" href="/slides/revealjs/css/reveal.min.css">
+    <link rel="stylesheet" href="/slides/revealjs/css/theme/sake.css" id="theme">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="/slides/revealjs/lib/css/ir-black.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = window.location.search.match( /print-pdf/gi ) ? '/slides/revealjs/css/print/pdf.css' : '/slides/revealjs/css/print/paper.css';
+        document.getElementsByTagName( 'head' )[ 0 ].appendChild( link );
+    </script>
+    <!--[if lt IE 9]>
+    <script src="/slides/revealjs/lib/js/html5shiv.js"></script>
+    <![endif]-->
+    <meta property="og:site_name" content="Talks by Sandro Keil" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="A new era of PHP profiler by Sandro Keil" />
+    <meta property="og:description" content="The new PHP profiler revolutionize the analysis of PHP apps. Take a closer look to Blackfire, Tideways and Zend Z-Ray" />
+    <meta property="og:url" content="https://sandro-keil.de/slides/a-new-era-of-php-profiler/#/" />
+    <meta property="og:image" content="https://sandro-keil.de/blog/content/images/2016/09/sandro-keil-php-profiler-codetalks.png" />
+    <meta property="article:published_time" content="2016-10-01T18:05:42.000Z" />
+    <meta property="article:modified_time" content="2016-10-01T18:05:42.000Z" />
+    <meta property="article:tag" content="PHP" />
+    <meta property="article:tag" content="Profiling" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="A new era of PHP profiler by Sandro Keil" />
+    <meta name="twitter:description" content="The new PHP profiler revolutionize the analysis of PHP apps. Take a closer look to Blackfire, Tideways and Zend Z-Ray" />
+    <meta name="twitter:url" content="https://sandro-keil.de/slides/a-new-era-of-php-profiler/#/" />
+    <meta name="twitter:image:src" content="https://sandro-keil.de/blog/content/images/2016/09/sandro-keil-php-profiler-codetalks.png" />
+    <script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type": "Person",
+  "name": "Sandro Keil",
+  "image": "https://sandro-keil.de/assets/img/sandro_business.jpg",
+  "url": "https://sandro-keil.de",
+  "sameAs" : [
+      "https://twitter.com/SandroKeil",
+      "https://www.xing.com/profile/Sandro_Keil",
+      "https://github.com/sandrokeil"
+    ]
+  }
+}
+    </script>
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "publisher": "Blog by Sandro Keil",
+    "author": {
+        "@type": "Person",
+        "name": "Sandro Keil",
+        "image": "https://sandro-keil.de/blog/content/images/2014/11/xing.jpg",
+        "url": "https://sandro-keil.de/blog/author/sandrokeil",
+        "sameAs": "https://twitter.com/SandroKeil",
+        "description": "Sandro Keil is a Zend Certified PHP Engineer and a ZF2 Certified Architect. He writes about topics, advices and trends of web development."
+    },
+    "headline": "A new era of PHP profiler by Sandro Keil",
+    "url": "https://sandro-keil.de/slides/a-new-era-of-php-profiler/#/",
+    "datePublished": "2016-10-01T18:05:42.000Z",
+    "dateModified": "2016-10-01T18:05:42.000Z",
+    "image": "https://sandro-keil.de/blog/content/images/2016/09/sandro-keil-php-profiler-codetalks.png",
+    "keywords": "PHP, Profiling",
+    "description": "The new PHP profiler revolutionize the analysis of PHP apps. Take a closer look to Blackfire, Tideways and Zend Z-Ray"
+}
+    </script>
+    <style type="text/css">
+        .dot{
+            width:150px;
+            height:85px;
+            position:absolute;
+            background: url(/slides/a-new-era-of-php-profiler/img/euro.jpg);
+            background-size: 100% 100%;
+        }
+    </style>
+</head>
+<body class="background-gutter">
+<div id="money-rain" class="reveal">
+    <div class="slides">
+        <section>
+            <h2 class="heading-color">A new era of<br>PHP profiler</h2>
+            <p>by Sandro Keil</p>
+            <p>IT-Consultant / Senior Software Developer <a href="https://twitter.com/prooph_software">@prooph_software</a></p>
+            <p>Author, Blogger, Open Source Evangelist</p>
+            <p><a href="https://sandro-keil.de/">https://sandro-keil.de</a></p>
+        </section>
+
+        <section>
+            <h1>Agenda</h1>
+            <ol>
+                <li class="agenda-active-color">Motivation</li>
+                <li>Explanation of terms</li>
+                <li>Deep Dive Profiler</li>
+                <li>Pitfalls</li>
+            </ol>
+            <aside class="notes">
+            </aside>
+        </section>
+
+        <section>
+            <h1>Why<br>profiling?</h1>
+            <aside class="notes">
+                <ul>
+                    <li>it works, all happy</li>
+                    <li>question audience who profiling?</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h2 class="third-color"><strong>Time</strong><br>is<br><span class="heading-color">money</span></h2>
+            <aside class="notes">
+                <ul>
+                    <li>less performance -> less revenue</li>
+                    <li>continuous profiling dev workflow</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h2 class="third-color"><strong>Detect</strong><br><span class="heading-color">Bottlenecks</span></h2>
+            <span class="fragment fade-left">DB</span>
+            <span class="fragment fade-left">, Filesystem</span>
+            <span class="fragment fade-left">, API</span>
+            <span class="fragment fade-left">, Bad code</span>
+            <aside class="notes">
+                <ul>
+                    <li>SQL queries in loops</li>
+                    <li>inactive cache</li>
+                    <li>complex PHP apps, changes have impact positive / negative</li>
+                    <li>Composer 1 liner 30 - 90% perf (garbage collector)</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h2 class="third-color"><span class="heading-color">80-20</span><br><strong>rule</strong></h2>
+            <object id="80-20-rule" type="image/svg+xml" data="/slides/a-new-era-of-php-profiler/img/80-20-rule.svg"></object>
+            <aside class="notes">
+                <ul>
+                    <li>80% frontend rendering</li>
+                    <li>20% backend</li>
+                    <li>1s pageload</li>
+                    <li>200 milliseconds backend</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h1>Agenda</h1>
+            <ol>
+                <li>Motivation</li>
+                <li class="agenda-active-color">Explanation of terms</li>
+                <li>Deep Dive Profiler</li>
+                <li>Pitfalls</li>
+            </ol>
+            <aside class="notes"></aside>
+        </section>
+
+
+        <section>
+            <h1>Callers, Callees, Call Graph<br>Oh My ...</h1>
+        </section>
+
+        <section>
+            <h2 class="third-color"><span class="heading-color">Callers</span><br><strong>calls</strong> the function</h2>
+            <aside class="notes">
+                <ul>
+                    <li>aka parent calls</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h2 class="third-color"><span class="heading-color">Callees</span><br><strong>called</strong><br>by the function</h2>
+            <aside class="notes">
+                <ul>
+                    <li>aka child calls</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h2 class="third-color"><strong>info</strong> about<br><span class="heading-color">execution time, function calls<br>& memory</span></h2>
+            <aside class="notes">
+                <ul>
+                    <li>exclusive values (only function itself), first look</li>
+                    <li>inclusive values (with callees), detect critical paths in app</li>
+                    <li>peak values</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h2 class="third-color"><span class="heading-color">Call graph</span><br>hierarchical <strong>visualisation</strong><br>of function calls</h2>
+            <aside class="notes">
+                <ul>
+                    <li>code path for the run</li>
+                </ul>
+            </aside>
+        </section>
+
+
+        <section>
+            <h1>How to<br>profile?</h1>
+            <aside class="notes">
+                <ul>
+                    <li>disable caches</li>
+                    <li>comparing changes</li>
+                    <li>Identical Infrastructure (same PHP versions, ...)</li>
+                    <li>improvements dev -> prod (win, linux)</li>
+                    <li>profile prod app</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h2 class="third-color"><strong>sort</strong> by<br><span class="heading-color">exclusive time</span></h2>
+            <aside class="notes">
+                <ul>
+                    <li>only first 25</li>
+                    <li>looking for your code</li>
+                    <li>looking for 3rd party code</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h2 class="third-color"><strong>sort</strong> by<br><span class="heading-color">function calls</span></h2>
+            <aside class="notes">
+                <ul>
+                    <li>same from above?</li>
+                    <li>build-in PHP functions</li>
+                    <li>solves n+1 problem (loops query, missing cache, ...)</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h1>Profiling<br>vs.<br>Bench<br>marking</h1>
+            <aside class="notes">
+                <ul>
+                    <li>What profiling is and what's the difference</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h2 class="third-color"><span class="heading-color">Profiling</span><br><strong>relative</strong><br>performance</h2>
+            <aside class="notes">
+                <ul>
+                    <li>relative performance of PHP app (code)</li>
+                    <li>CPU usage, memory usage, time and number of calls per function</li>
+                    <li>differ between active/passive profiler</li>
+                    <li>active = start developer, more info (huge impact), not for production</li>
+                    <li>passive = start auto, e.g. every 100 request (less impact)</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h2 class="third-color"><span class="heading-color">Benchmarks</span><br><strong>current</strong><br>performance</h2>
+
+            <span class="fragment fade-left">
+                <a href="https://httpd.apache.org/docs/2.4/programs/ab.html" title="Apache HTTP server benchmarking tool" target="_blank">ab</a>,
+                <a href="http://jmeter.apache.org/" title="test performance on static and dynamic resources" target="_blank">Apache JMeter</a>,
+                <a href="https://www.joedog.org/siege-home/" title="http load testing and benchmarking utility" target="_blank">Siege</a>,
+                <a href="http://gatling.io" title="load testing framework based on Scala, Akka & Netty" target="_blank">Gatling</a>
+            </span>
+
+            <aside class="notes">
+                <ul>
+                    <li>or load test</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h1>Agenda</h1>
+            <ol>
+                <li>Motivation</li>
+                <li>Explanation of terms</li>
+                <li class="agenda-active-color">Deep Dive Profiler</li>
+                <li>Pitfalls</li>
+            </ol>
+            <aside class="notes"></aside>
+        </section>
+
+
+        <section>
+            <h1>History</h1>
+            <object id="profiler-timeline-1" type="image/svg+xml" data="/slides/a-new-era-of-php-profiler/img/profiler-timeline.svg"></object>
+
+            <aside class="notes">
+                <ul>
+                    <li>Xdebug - Derick Rethans (active profiler)</li>
+                    <li>Facebook XHProf - (first passive profiler)</li>
+                    <li>Zend Server Z-Ray (passive, Paid)</li>
+                    <li>Tideways (passive, Paid)</li>
+                    <li>Blackfire (passive, Free / Paid)</li>
+                    <li>Zend Z-Ray (passive, Free)</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section data-transition="zoom" data-background-transition="zoom" data-background="/slides/a-new-era-of-php-profiler/img/zend-z-ray.png">
+
+            <h1 class="heading-shadow">Zend<br>(Server)<br>Z-Ray</h1>
+            <aside class="notes">
+                <ul>
+                    <li>Zend Server Free for ZCEs in dev</li>
+                    <li>Zend Z-Ray standalone free</li>
+                    <li>Docker image</li>
+                    <li>All data is local</li>
+                    <li>access protection</li>
+                    <li>credential filter for live systems</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <section>
+                <h2 class="third-color"><span class="heading-color">Realtime</span><br>analysis<br><strong>in Browser</strong></h2>
+                <span class="fragment fade-left third-color">DB Queries</span>
+                <span class="fragment fade-left third-color">, Filter / Sort</span><br>
+                <span class="fragment fade-left third-color">Execution Time</span>
+                <span class="fragment fade-left third-color">, Request info</span><br>
+                <span class="fragment fade-left third-color">Erros / Exceptions</span>
+
+                <aside class="notes">
+                    <ul>
+                        <li>is really awesome (fades, slide down)</li>
+                    </ul>
+                </aside>
+
+            </section>
+            <section data-background-video="/slides/a-new-era-of-php-profiler/video/zend-z-ray-analyse.webm" data-background-video-muted>
+                <aside class="notes">
+                    <ul>
+                        <li>PHP, DB, Network, IO time</li>
+                        <li>DB Queries with values</li>
+                        <li>Function calls, incl./excl./average duration, File + line</li>
+                        <li>ajax calls</li>
+                        <li>Super Globals, Request/Response Headers/Body, Raw data</li>
+                    </ul>
+                </aside>
+            </section>
+        </section>
+
+        <section>
+            <section>
+                <h2 class="third-color"><span class="heading-color">Z-Ray</span><br><strong>History / Live</strong></h2>
+                <aside class="notes">
+                    <ul>
+                        <li>slide down</li>
+                    </ul>
+                </aside>
+            </section>
+            <section data-background-video="/slides/a-new-era-of-php-profiler/video/zend-z-ray-history.webm" data-background-video-muted>
+                <aside class="notes">
+                    <ul>
+                        <li>same as in browser</li>
+                        <li>every request (CLI, ajax calls)</li>
+                        <li>no compare of requests (maybe soon)</li>
+                        <li>but no Callers, Callees, Call Graph</li>
+                        <li>solution via plugins ?</li>
+                    </ul>
+                </aside>
+            </section>
+        </section>
+
+        <section>
+            <section>
+            <h2 class="third-color"><span class="heading-color">Plugins</span><br>are<br><strong>awesome</strong></h2>
+            <span class="fragment fade-left third-color">written in plain PHP</span>
+            <aside class="notes">
+                <ul>
+                    <li>imagine write own profiler info</li>
+                    <li>slide down</li>
+                </ul>
+            </aside>
+            </section>
+            <section data-background-video="/slides/a-new-era-of-php-profiler/video/zend-z-ray-plugins.webm" data-background-video-muted>
+                <aside class="notes">
+                    <ul>
+                        <li>Plugin gallery</li>
+                        <li>Update plugin function</li>
+                        <li>slide down</li>
+                    </ul>
+                </aside>
+            </section>
+            <section>
+                <h3 class="heading-color">zray.php</h3>
+                <pre>
+                    <code class="php">&lt;?php
+    // Allocate ZRayExtension for namespace "doctrine2"
+    $zre = new \ZRayExtension('doctrine2', true);
+
+    // Doctrine\DBAL
+    $zre->traceFunction(
+        'Doctrine\DBAL\Connection::execute', // &lt;-- analyze this
+        function(){ /* before */ },
+        function(){ /* after */}
+    );
+
+    // rendering via phtml files</code></pre>
+                <br><br>
+                <a href="https://github.com/sandrokeil/Z-Ray-Doctrine2" title="Provides information about various Doctrine 2 elements" target="_blank">Z-Ray Doctrine 2 Plugin</a>
+            <aside class="notes">
+                <ul>
+                    <li>it's really easy</li>
+                </ul>
+            </aside>
+            </section>
+        </section>
+
+        <section data-background="/slides/a-new-era-of-php-profiler/img/blackfire.png">
+            <h1 class="heading-shadow">SensioLabs<br>Blackfire</h1>
+            <aside class="notes">
+                <ul>
+                    <li>Software as a Service or on premise</li>
+                    <li>completely replaced XHProf code</li>
+                    <li>Docker image</li>
+                    <li>Google Chrome Extension</li>
+                    <li>data (not) stored locally</li>
+                    <li>profiles public, if link known</li>
+                    <li>no extension / plugin API</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <section>
+                <h2 class="third-color"><strong>Interactive</strong><br><span class="heading-color">Call Graph</span></h2>
+                <span class="fragment fade-left third-color" data-fragment-index="0">with</span>
+                <h2 class="fragment fade-left third-color" data-fragment-index="0"><strong>Different</strong><br><span class="heading-color">visualizations</span></h2>
+                <span class="fragment fade-left third-color">Time, I/O Wait, CPU Time, Memory, Network, (HTTP, SQL)</span>
+                <aside class="notes">
+                    <ul>
+                        <li>hides useless info in Call Graph</li>
+                        <li>functions with less than 1% of global costs</li>
+                        <li>--samples option for more accurate results (GET)</li>
+                        <li>slide down</li>
+                        <li>HTTP, SQL only paid</li>
+                    </ul>
+                </aside>
+            </section>
+            <section data-background-video="/slides/a-new-era-of-php-profiler/video/blackfire-call-graph.webm" data-background-video-muted>
+                <aside class="notes">
+                    <ul>
+                        <li>colored backgrounds most intensive nodes</li>
+                        <li>colored borders app hot path</li>
+                        <li>click on node -> display details (callers, callees, time, calls)</li>
+                    </ul>
+                </aside>
+            </section>
+        </section>
+
+        <section>
+            <section>
+            <h2 class="third-color"><span class="heading-color">Comparing</span><br>of<br><strong>profiles</strong></h2>
+            <aside class="notes">
+                <ul>
+                    <li>upload of XHProf, Xdebug or Callgrind profile</li>
+                    <li>also own Blackfire-Format for other languages</li>
+                    <li>sharing profiles</li>
+                    <li>slide down</li>
+                </ul>
+            </aside>
+            </section>
+            <section data-background-video="/slides/a-new-era-of-php-profiler/video/blackfire-profile-compare.webm" data-background-video-muted>
+                <aside class="notes">
+                </aside>
+            </section>
+        </section>
+
+        <section>
+            <section>
+                <h2 class="third-color"><span class="heading-color">PHP SDK available</span></h2>
+                <pre>
+                    <code class="php">&lt;?php
+
+// start profiling
+$blackfire = new Blackfire\Client(
+    new \Blackfire\ClientConfiguration($clientId, $clientToken)
+);
+$probe = $blackfire->createProbe();
+
+// user application code ...
+
+// end profiling
+$blackfire->endProbe($probe);</code>
+                </pre>
+                <span class="fragment fade-left third-color">PHPUnit, Guzzle and Goutte integration</span>
+                <aside class="notes">
+                    <ul>
+                        <li>via Composer</li>
+                        <li>assertions (mem, count, CPU/wall time) - Paid version</li>
+                        <li>activate per request header</li>
+                    </ul>
+                </aside>
+            </section>
+        </section>
+
+        <section>
+            <h2 class="third-color">Much more<br><span class="heading-color">features</span><br>in <strong>paid</strong> version</h2>
+            <aside class="notes">
+                <ul>
+                    <li>best practices</li>
+                    <li>framework / peformance recommendations</li>
+                    <li>notifications (GitHub, Slack, ...)</li>
+                    <li>Build reports (scenarios)</li>
+                    <li>SQL requests</li>
+                    <li>environment</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section data-background="/slides/a-new-era-of-php-profiler/img/tideways-timeline.jpg">
+            <h1 class="heading-shadow">Tideways</h1>
+            <aside class="notes">
+                <ul>
+                    <li>aka Qafoo Profiler</li>
+                    <li>based on XHProf but massively improved</li>
+                    <li>data (not) stored locally</li>
+                    <li>but Tideways Enterprise edition in work (on premise)</li>
+                    <li>paid only version with 30 day trail</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <section>
+                <h2 class="third-color">
+                    <span class="heading-color">Timeline</span><br><strong>Tracing</strong><br>and<br><strong>Customization</strong>
+                </h2>
+                <aside class="notes">
+                    <ul>
+                        <li>N+1 Detection (loops)</li>
+                        <li>Spot Bootstraping Overhead</li>
+                        <li>anonymized SQL Queries</li>
+                        <li>Template Engine Support Twig, Blade, ...</li>
+                        <li>add new spans for even more insights</li>
+                        <li>slide down</li>
+                    </ul>
+                </aside>
+            </section>
+            <section data-background-video="/slides/a-new-era-of-php-profiler/video/tideways-timeline.webm" data-background-video-muted>
+            </section>
+        </section>
+
+        <section>
+            <section>
+                <h2 class="third-color"><strong>detailed</strong><br><span class="heading-color">Call graph</span></h2>
+                <aside class="notes">
+                    <ul>
+                        <li>powerful search interface</li>
+                        <li>slide down</li>
+                    </ul>
+                </aside>
+            </section>
+            <section data-background-video="/slides/a-new-era-of-php-profiler/video/tideways-call-graph.webm" data-background-video-muted>
+                <aside class="notes">
+                    <ul>
+                        <li>group/filter by Namespace(s)</li>
+                        <li>compare profiles</li>
+                    </ul>
+                </aside>
+            </section>
+        </section>
+
+        <section>
+            <section>
+                <h2 class="third-color">Application<br><strong>Performance</strong><br><span class="heading-color">Monitoring</span></h2>
+                <aside class="notes">
+                    <ul>
+                        <li>Response Times</li>
+                        <li>Transactions / Endpoints</li>
+                        <li>Minute by Minute Breakdown</li>
+                        <li>Weekly Report and History</li>
+                        <li>Compare Deployments</li>
+                        <li>slide down</li>
+                    </ul>
+                </aside>
+            </section>
+            <section data-background-video="/slides/a-new-era-of-php-profiler/video/tideways-monitoring.webm" data-background-video-muted>
+            </section>
+        </section>
+
+        <section>
+            <section>
+                <h2 class="third-color"><span class="heading-color">Custom Instrumentation</span></h2>
+                <span class="fragment fade-left">Transaction names</span><span class="fragment fade-left">, Collecting timespans</span><br>
+                <span class="fragment fade-left">Metadata to root spans</span><span class="fragment fade-left">, Detecting Exceptions</span>
+                <aside class="notes">
+                    <ul>
+                        <li>slide down</li>
+                        <li>Transaction Names = Name for Request / URL product::detail</li>
+                        <li>Collecting Timespans, Explictly create, start and stop timespans, Watching function calls and with callback</li>
+                        <li>Custom variables</li>
+                    </ul>
+                </aside>
+            </section>
+            <section>
+                <h3 class="heading-color">extension API example</h3>
+                <pre>
+                    <code class="php">&lt;?php
+// Collecting Timespans
+$span = \Tideways\Profiler::createSpan('sql');
+$span->startTimer();
+$span->annotate(array('title' => 'insert users'));
+
+$pdo->query('INSERT INTO users (id, name) values (1, "foo")');
+
+$span->stopTimer();
+
+// wrap spans around function calls
+\Tideways\Profiler::start();
+
+\Tideways\Profiler::watch('Acme\Library::doSomething');</code>
+                </pre>
+            </section>
+        </section>
+
+
+        <section>
+            <h2 class="third-color"><span class="heading-color">Error</span> <strong>tracking</strong></h2>
+            <h2 class="third-color fragment fade-left"><strong>Alerts</strong> and <span class="heading-color">Notifications</span></h2>
+            <aside class="notes">
+                <ul>
+                    <li>Error / Exception message</li>
+                    <li>Stack trace</li>
+                    <li>E-Mail, IRC, HipChat and Slack</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h1>Agenda</h1>
+            <ol>
+                <li>Motivation</li>
+                <li>Explanation of terms</li>
+                <li>Deep Dive Profiler</li>
+                <li class="agenda-active-color">Pitfalls</li>
+            </ol>
+            <aside class="notes"></aside>
+        </section>
+
+
+        <section>
+            <h1>Pitfalls</h1>
+            <aside class="notes">
+                <ul>
+                    <li>What can be happen? (wrong path)</li>
+                </ul>
+            </aside>
+        </section>
+
+
+        <section>
+            <h2 class="third-color"><span class="heading-color">Profiiling</span> <strong>overhead</strong></h2>
+            <object type="image/svg+xml" data="/slides/a-new-era-of-php-profiler/img/profiler-overhead.svg"></object>
+            <a href="https://tideways.io/profiler/blog/profiling-overhead-and-php-7" title="measure the profiling overhead" target="_blank">More details</a>
+            <aside class="notes">
+                <ul>
+                    <li>for function calls</li>
+                    <li>Profilers overemphasize frequently called functions</li>
+                    <li>PHP profiler bloat native functions</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h2 class="third-color"><strong>Micro</strong><br><span class="heading-color">optimizations</span></h2>
+            <aside class="notes">
+                <ul>
+                    <li>Replace double with single quotes</li>
+                    <li>is_null() with === null</li>
+                    <li>relation of time and money</li>
+                    <li>Maintenance is important</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h2 class="third-color"><strong>Not</strong><br>to change<br><span class="heading-color">technology</span></h2>
+            <aside class="notes">
+                <ul>
+                    <li>Think about architectural changes, factor > 10</li>
+                    <li>Elasticsearch, Varnish, MongoDB, Redis</li>
+                </ul>
+            </aside>
+        </section>
+
+
+        <section data-background="/slides/img/blue-php-elephant.jpg">
+            <br/><br/>
+            <ul class="list-inline">
+                <li>
+                    <a href="https://github.com/sandrokeil" target="_blank" class="list-link" title="Github">
+                        <i class="fa fa-github"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://twitter.com/SandroKeil" target="_blank" class="list-link" title="Twitter">
+                        <i class="fa fa-twitter"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="http://de.linkedin.com/pub/sandro-keil/99/291/7b2" target="_blank" class="list-link"
+                       title="LinkedIn">
+                        <i class="fa fa-linkedin"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://www.xing.com/profile/Sandro_Keil" target="_blank" class="list-link" title="Xing">
+                        <i class="fa fa-xing"></i>
+                    </a>
+                </li>
+            </ul>
+            <h3 class="third-color">Questions ?</h3>
+            <p><a href="https://sandro-keil.de/blog/tag/profiling/" class="g-btn color_white outlined"><span>Visit My Website</span></a>
+        </section>
+    </div>
+</div>
+
+<div id="hidden" style="display:none;">
+    <div id="header">
+        <div id="footer-left">@sandrokeil</div>
+    </div>
+</div>
+
+<script src="/slides/revealjs/lib/js/head.min.js"></script>
+<script src="/slides/revealjs/js/reveal.min.js"></script>
+<script>
+    Reveal.initialize( {
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+        // Optional reveal.js plugins
+        dependencies: [
+            {
+                src: '/slides/revealjs/lib/js/classList.js', condition: function() {
+                return !document.body.classList;
+            }
+            },
+            {
+                src: '/slides/revealjs/plugin/markdown/marked.js', condition: function() {
+                return !!document.querySelector( '[data-markdown]' );
+            }
+            },
+            {
+                src: '/slides/revealjs/plugin/markdown/markdown.js', condition: function() {
+                return !!document.querySelector( '[data-markdown]' );
+            }
+            },
+            {
+                src: '/slides/revealjs/plugin/highlight/highlight.js', async: true, callback: function() {
+                hljs.initHighlightingOnLoad();
+            }
+            },
+            { src: '/slides/revealjs/plugin/zoom-js/zoom.js', async: true },
+            { src: '/slides/revealjs/plugin/notes/notes.js', async: true }
+        ]
+    } );
+
+</script>
+<script src="/slides/revealjs/js/jquery-2.2.4.min.js"></script>
+<script src="/assets/js/TweenMax.min.js"></script>
+<script src="/assets/js/vivus.min.js"></script>
+<script type="text/javascript">
+    var canvas = null;
+    var ctx = null;
+    var png = null;
+    var particles = [];
+
+    Reveal.addEventListener( 'slidechanged', function( event ) {
+        switch ( event.indexh ) {
+            case 3:
+                /*
+                 a Pen by DIACO : twitter.com/Diaco_ml  ||  codepen.io/MAW
+                 powered by GSAP : http://www.greensock.com/
+                 */
+                TweenLite.set( "#money-rain", { perspective: 600 } )
+                TweenLite.set( "img", { xPercent: "-50%", yPercent: "-50%" } )
+
+                var total = 30;
+                var repeat = 2;
+                var warp = document.getElementById( "money-rain" ), w = window.innerWidth, h = window.innerHeight;
+
+                for ( i = 0; i < total; i++ ) {
+                    var Div = document.createElement( 'div' );
+                    TweenLite.set( Div, {
+                        attr: { class: 'dot' },
+                        x: R( 0, w ),
+                        y: R( -200, -150 ),
+                        z: R( -200, 200 )
+                    } );
+                    warp.appendChild( Div );
+                    animm( Div );
+                }
+
+                function animm ( elm ) {
+                    TweenMax.to( elm, R( 6, 15 ), { y: h + 100, ease: Linear.easeNone, repeat: repeat, delay: -15 } );
+                    TweenMax.to( elm, R( 4, 8 ), {
+                        x: '+=100',
+                        rotationZ: R( 0, 180 ),
+                        repeat: repeat,
+                        yoyo: true,
+                        ease: Sine.easeInOut
+                    } );
+                    TweenMax.to( elm, R( 2, 8 ), {
+                        rotationX: R( 0, 360 ),
+                        rotationY: R( 0, 360 ),
+                        repeat: repeat,
+                        yoyo: true,
+                        ease: Sine.easeInOut,
+                        delay: -5
+                    } );
+                }
+
+                function R ( min, max ) {
+                    return min + Math.random() * (max - min)
+                }
+                // a Pen by DIACO : twitter.com/Diaco_ml  ||  codepen.io/MAW
+                break;
+            case 4:
+                $("div.dot").remove();
+                break;
+            case 5:
+                new Vivus('80-20-rule', {
+                    type: 'async',
+                    duration: 200,
+                    animTimingFunction: Vivus.EASE,
+                    pathTimingFunction: Vivus.EASE_OUT_BOUNCE
+                }, function(){});
+                break;
+            case 19:
+                new Vivus('profiler-timeline-1', {
+                    type: 'async',
+                    duration: 200,
+                    animTimingFunction: Vivus.EASE,
+                    pathTimingFunction: Vivus.EASE_OUT_BOUNCE
+                }, function(){});
+                break;
+            default:
+                break;
+        }
+    } );
+</script>
+<script type="text/javascript">
+    // 3. On Reveal.js ready event, copy header/footer <div> into each `.slide-background` <div>
+    var header = $('#header').html();
+    if ( window.location.search.match( /print-pdf/gi ) ) {
+        Reveal.addEventListener( 'ready', function( event ) {
+            $('.slide-background').append(header);
+        });
+    }
+    else {
+        $('div.reveal').append(header);
+    }
+</script>
+</body>
+</html>

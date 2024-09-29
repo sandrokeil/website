@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Docker for PHP Developers by Sandro Keil</title>
+    <meta name="description" content="With Docker it's so easy to build infrastructure for development like a production environment.">
+    <meta name="author" content="Sandro Keil">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    <link rel="canonical" href="https://sandro-keil.de/slides/docker-for-php-developers/">
+    <link rel="shortlink" href="https://sandro-keil.de/slides/docker-for-php-developers/">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="twitter:site" content="@SandroKeil">
+    <meta name="twitter:creator" content="@SandroKeil">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/apple-icon.png">
+
+    <link rel="stylesheet" href="/slides/revealjs/css/reveal.min.css">
+    <link rel="stylesheet" href="/slides/revealjs/css/theme/sake.css" id="theme">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="/slides/revealjs/lib/css/ir-black.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = window.location.search.match( /print-pdf/gi ) ? '/slides/revealjs/css/print/pdf.css' : '/slides/revealjs/css/print/paper.css';
+        document.getElementsByTagName( 'head' )[ 0 ].appendChild( link );
+    </script>
+    <!--[if lt IE 9]>
+    <script src="/slides/revealjs/lib/js/html5shiv.js"></script>
+    <![endif]-->
+    <meta property="og:site_name" content="Talks by Sandro Keil" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Docker for PHP Developers by Sandro Keil" />
+    <meta property="og:description" content="With Docker it's so easy to build infrastructure for development like a production environment." />
+    <meta property="og:url" content="https://sandro-keil.de/slides/docker-for-php-developers/" />
+    <meta property="og:image" content="https://sandro-keil.de/blog/content/images/2016/10/sandro-keil-docker-for-php-developers.png" />
+    <meta property="article:published_time" content="2016-11-10T22:01:05.000Z" />
+    <meta property="article:modified_time" content="2016-11-10T22:01:05.000Z" />
+    <meta property="article:tag" content="PHP" />
+    <meta property="article:tag" content="Docker" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Docker for PHP Developers by Sandro Keil" />
+    <meta name="twitter:description" content="With Docker it's so easy to build infrastructure for development like a production environment." />
+    <meta name="twitter:url" content="https://sandro-keil.de/slides/docker-for-php-developers/" />
+    <meta name="twitter:image:src" content="https://sandro-keil.de/blog/content/images/2016/10/sandro-keil-docker-for-php-developers.png" />
+    <script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type": "Person",
+  "name": "Sandro Keil",
+  "image": "https://sandro-keil.de/assets/img/sandro_business.jpg",
+  "url": "https://sandro-keil.de",
+  "sameAs" : [
+      "https://twitter.com/SandroKeil",
+      "https://www.xing.com/profile/Sandro_Keil",
+      "https://github.com/sandrokeil"
+    ]
+  }
+}
+    </script>
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "publisher": "Blog by Sandro Keil",
+    "author": {
+        "@type": "Person",
+        "name": "Sandro Keil",
+        "image": "https://sandro-keil.de/blog/content/images/2014/11/xing.jpg",
+        "url": "https://sandro-keil.de/blog/author/sandrokeil",
+        "sameAs": "https://twitter.com/SandroKeil",
+        "description": "Sandro Keil is a Zend Certified PHP Engineer and a ZF2 Certified Architect. He writes about topics, advices and trends of web development."
+    },
+    "headline": "Docker for PHP Developers by Sandro Keil",
+    "url": "https://sandro-keil.de/slides/docker-for-php-developers/",
+    "datePublished": "2016-11-10T22:01:05.000Z",
+    "dateModified": "2016-11-10T22:01:05.000Z",
+    "image": "https://sandro-keil.de/blog/content/images/2016/10/sandro-keil-docker-for-php-developers.png",
+    "keywords": "PHP, Docker",
+    "description": "With Docker it's so easy to build infrastructure for development like a production environment."
+}
+    </script>
+    <style type="text/css">
+        .dot{
+            width:150px;
+            height:85px;
+            position:absolute;
+            background: url(/slides/a-new-era-of-php-profiler/img/euro.jpg);
+            background-size: 100% 100%;
+        }
+    </style>
+</head>
+<body class="background-gutter">
+<div id="money-rain" class="reveal">
+    <div class="slides">
+        <section>
+            <h2 class="heading-color">Docker for<br>PHP Developers</h2>
+            <p>by Sandro Keil</p>
+            <p>IT-Consultant / Senior Software Developer <a href="https://twitter.com/prooph_software">@prooph_software</a></p>
+            <p>Author, Blogger, Open Source Evangelist</p>
+            <p><a href="https://sandro-keil.de/">https://sandro-keil.de</a></p>
+        </section>
+
+        <section>
+            <h1>Agenda</h1>
+            <ol>
+                <li class="agenda-active-color">Docker ecosystem</li>
+                <li>Benefits</li>
+                <li>Hell yeah, how?</li>
+            </ol>
+            <aside class="notes">
+            </aside>
+        </section>
+
+        <section>
+            <img src="/slides/img/docker/large_h-dark-trans.png" alt="Docker"/>
+            <h2 class="docker-color">
+                <span class="fragment">Build</span>&nbsp;<span class="fragment"> Ship</span>&nbsp;<span class="fragment"> Run</span>
+            </h2>
+            <aside class="notes">
+                <ul>
+                    <li>independent of any platform or language.</li>
+                    <li>compose your application from microservices</li>
+                    <li>without worrying about inconsistencies between development and production environments</li>
+                    <li>entire cycle of app development, testing and distribution</li>
+                    <li>ability to deploy scalable services, securely and reliably</li>
+                </ul>
+            </aside>
+        </section>
+        <section data-transition="zoom" data-background-transition="zoom" data-background="/slides/docker-for-php-developers/img/shrek.jpg">
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <h1 class="heading-shadow">Virtual Machines</h1>
+            <div class="footnote">
+                &quot;<a href='https://www.flickr.com/photos/lorenjavier/5493526666/' target='_blank'>Meeting Shrek at
+                Universal Studios</a>&quot;&nbsp;(<a rel='license'
+                                                     href='https://creativecommons.org/licenses/by-nd/2.0/'
+                                                     target='_blank'>CC BY-ND 2.0</a>)&nbsp;by&nbsp;<a
+                    href='https://www.flickr.com/people/lorenjavier/' target='_blank'>&nbsp;</a><a
+                    href='https://www.flickr.com/people/lorenjavier/' target='_blank'>Castles, Capes & Clones</a>
+            </div>
+            <aside class="notes">
+                <ul>
+                    <li>Virtual Box since 2005</li>
+                </ul>
+            </aside>
+        </section>
+        <section data-transition="zoom" data-background-transition="zoom" data-background="/slides/docker-for-php-developers/img/hulk.jpg">
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <h1 class="heading-shadow">Docker</h1>
+            <div class="footnote">
+                &quot;<a href='https://pixabay.com/de/hulk-marvel-actionfiguren-nerd-667988/' target='_blank'>Hulk</a>&quot;&nbsp;(<a rel='license'
+                                                                                                                                      href='https://creativecommons.org/publicdomain/zero/1.0/deed.de'
+                                                                                                                                      target='_blank'>CC0 1.0 Universell</a>)&nbsp;by&nbsp;<a
+                    href='https://pixabay.com/de/users/Ribastank-805206/' target='_blank'>&nbsp;</a><a
+                    href='https://pixabay.com/de/users/Ribastank-805206/' target='_blank'>Fernando Ribas</a></div>
+            <aside class="notes">
+                <ul>
+                    <li>Docker since 2013</li>
+                    <li>LXC since 2008</li>
+                </ul>
+            </aside>
+        </section>
+        <section data-transition="zoom" data-background-transition="zoom" data-background="/slides/docker-for-php-developers/img/avengers.jpg">
+            <h1 class="heading-shadow">Docker</h1>
+            <p class="h3 heading-secondary-shadow">with</p>
+            <p class="h1 heading-shadow">Uni<br/>kernels</p>
+            <div class="footnote">
+                &quot;<a href='https://www.flickr.com/photos/tales2astonish/6976086464/' target='_blank'>The Avengers
+                movie art</a>&quot;&nbsp;(<a rel='license' href='https://creativecommons.org/licenses/by-sa/2.0/'
+                                             target='_blank'>CC BY-SA 2.0</a>)&nbsp;by&nbsp;<a
+                    href='https://www.flickr.com/people/tales2astonish/' target='_blank'>&nbsp;</a><a
+                    href='https://www.flickr.com/people/tales2astonish/' target='_blank'>marvelousRoland</a>
+            </div>
+            <aside class="notes">
+                <ul>
+                    <li>first systems late 1990s.</li>
+                </ul>
+            </aside>
+        </section>
+        <section data-transition="fade slide" data-transition-speed="slow">
+            <!-- Compare VMs vs. Docker vs. Unikernels -->
+            <img src="/slides/docker-for-php-developers/img/virtual-machines.svg" alt="Virtual Machines"/>
+            <img class="fragment" src="/slides/docker-for-php-developers/img/docker-container.svg" alt="Docker Containers"/>
+            <aside class="notes">
+            </aside>
+        </section>
+        <section data-transition="fade" data-transition-speed="slow">
+            <!-- Compare VMs vs. Docker vs. Unikernels -->
+            <img class=" fade-in" src="/slides/docker-for-php-developers/img/docker-unikernels.svg" style="width:100%" alt="Docker Unikernels"/>
+            <aside class="notes">
+                <ul>
+                    <li>Unikernels solves unnecessary system complexity</li>
+                    <li>Unikernels solves building services in one env</li>
+                    <li>Microservices, small, self-contained, single-purpose apps</li>
+                    <li>Serverless</li>
+                    <li>Docker manages unikernels like LC</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <!-- Differnece between Docker Image and Docker Container -->
+            <h2 class="third-color"><span class="docker-color">Docker</span> <span class="heading-color">Image</span><br><strong>read-only</strong> template</h2>
+            <aside class="notes">
+                <ul>
+                    <li>read-only template</li>
+                    <li>Ubuntu + PHP-FPM</li>
+                    <li>Docker Images are the <b>build</b> component</li>
+                    <li>Used to create Docker Containers</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h2 class="third-color"><span class="docker-color">Docker</span> <span class="heading-color">Container</span><br><strong>executable</strong></h2>
+            <aside class="notes">
+                <ul>
+                    <li>can be run, started, stopped, moved, and deleted</li>
+                    <li>Docker Container are the <b>run</b> component</li>
+                    <li>contains everything is needed for an application to run</li>
+                    <li>one process per container (tuning, scaling)</li>
+                    <li>isolated and secure application platform</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <!-- Docker Toolbox -->
+            <h2 class="heading-color">Docker Toolbox</h2>
+            <img class="fragment" data-fragment-index="1" height="400" src="/slides/img/docker/sticker-swarm.png"
+                 alt="Docker "/>
+            <img class="fragment" data-fragment-index="2" height="400" src="/slides/img/docker/sticker-compose.png"
+                 alt="Docker "/>
+            <img class="fragment" data-fragment-index="0" height="400" src="/slides/img/docker/sticker-machine.png"
+                 alt="Docker "/>
+            <div data-fragment-index="0" class="fragment footnote">
+                Images © 2016 Docker, Inc. All rights reserved.
+            </div>
+            <aside class="notes">
+                <ul>
+                    <li>
+                        Docker Machine: Automate Docker Provisioning
+                        <ul>
+                            <li>for Windows &lt; 10 and Mac &lt; 10.10 Users</li>
+                            <li>Auto-provision hosts</li>
+                            <li>Auto-install Docker Engine</li>
+                            <li>Provision Swarm clusters</li>
+                        </ul>
+                    </li>
+                    <li>
+                        Docker Swarm: native clustering (also build-in)
+                        <ul>
+                            <li>transparently scale to multiple hosts</li>
+                            <li>multiple discovery backends: Consul, Etcd, ZooKepper</li>
+                        </ul>
+                    </li>
+                    <li>
+                        Docker Compose: Simplify Multi-Container apps
+                        <ul>
+                            <li>tool for defining and running multi-container Docker applications</li>
+                            <li>creates and maintains a logical definition of a distributed application</li>
+                            <li>show later</li>
+                        </ul>
+                    </li>
+                    <li>Others are Kitematic and Docker Registry, InfraKit, ...</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h1>Agenda</h1>
+            <ol>
+                <li>Docker ecosystem</li>
+                <li class="agenda-active-color">Benefits</li>
+                <li>Hell yeah, how?</li>
+            </ol>
+            <aside class="notes">
+                <ul>
+                    <li>Who's using Docker</li>
+                    <li>Why?</li>
+                    <li>Here our benefits</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h2 class="third-color"><span class="heading-color">Independence</span></h2>
+            <h4 class="third-color">
+                <span class="fragment">No Sysadmins</span> <span class="fragment"> + no DBA's</span> <span class="fragment"> = no fight</span>
+            </h4>
+            <aside class="notes">
+                <ul>
+                    <li>Sysadmins (only apache), DBA's (only MySQL)</li>
+                    <li>No communication overhead</li>
+                    <li>no different settings in environments</li>
+                    <li>freedom and responsibility</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h2 class="third-color">Complete change of<br><span class="heading-color">development</span><br><span class="heading-color">&amp; project</span><br><strong>process</strong></h2>
+            <h4 class="docker-color">
+                <span class="fragment">You Build it</span>&nbsp;&nbsp;&nbsp;<span class="fragment">You Ship it</span>&nbsp;&nbsp;&nbsp;<span class="fragment">You Run it</span>
+            </h4>
+            <aside class="notes">
+                <ul>
+                    <li>Developer have to know about infrastructure</li>
+                    <li>use technology which fits feature requirements</li>
+                    <li>Improved microservice apps</li>
+                    <li>only recommendations, no rules</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h2 class="third-color"><span class="heading-color">Agility</span></h2>
+            <h3 class="third-color fragment">Are we <strong>really</strong> agile?</h3>
+            <h3 class="third-color fragment">Or do we just <strong>like</strong> that?</h3>
+            <aside class="notes">
+                <ul>
+                    <li>No pseudo agility with Scrum</li>
+                    <li>real Agility &amp; Velocity through freedom</li>
+                    <li>continuous delivery</li>
+                    <li>faster feedback, cheaper experiments</li>
+                    <li>evolution, no end state</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <h1>Agenda</h1>
+            <ol>
+                <li>Docker ecosystem</li>
+                <li>Benefits</li>
+                <li class="agenda-active-color">Hell yeah, how?</li>
+            </ol>
+            <aside class="notes">
+            </aside>
+        </section>
+
+            <section>
+                <h2 class="heading-color">Dockerfile</h2>
+                <pre><code>FROM prooph/php:7.0-cli
+
+# Environmental Variables
+ENV COMPOSER_HOME /root/composer
+ENV COMPOSER_VERSION master
+
+RUN apk add --no-cache --virtual .persistent-deps git unzip
+
+RUN docker-php-ext-install zip \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Set up the application directory
+VOLUME ["/app"]
+WORKDIR /app
+
+# Set up the command arguments
+CMD ["-"]
+ENTRYPOINT ["composer", "--ansi"]</code></pre>
+                <br>
+                <span><a href="https://github.com/prooph/docker-files" target="_blank" title="prooph Docker files for PHP, nginx and others">More examples</a></span>
+                <aside class="notes">
+                </aside>
+            </section>
+
+        <section>
+            <h2 class="heading-color"><span class="docker-color">Docker</span> build</h2>
+            <pre>
+                <code>$ docker build -t prooph/composer:7.0 path/to/dockerfile/</code>
+            </pre>
+            <aside class="notes">
+                <ul>
+                    <li>copy files, same dir where Dockerfile is</li>
+                </ul>
+            </aside>
+        </section>
+        <section>
+            <h2 class="heading-color"><span class="docker-color">Docker</span> run</h2>
+            <pre>
+                <code>$ docker run --rm -it --volume $(pwd):/app prooph/composer:7.0 install</code>
+            </pre>
+            <aside class="notes">
+                <ul>
+                    <li></li>
+                </ul>
+            </aside>
+        </section>
+
+        <section>
+            <section>
+            <h2 class="heading-color">docker-compose.yml</h2>
+            <pre><code>version: '2'
+services:
+  nginx:
+    image: prooph/nginx:www
+    volumes:
+      - "./public/assets:/var/www:ro"
+    ports:
+      - "8080:80"
+      - "443:443"
+
+  php:
+    image: prooph/php:7.0-fpm
+    volumes:
+      - "./:/var/www"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${APP_MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${APP_MYSQL_USER}
+      - MYSQL_PASSWORD=${APP_MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${APP_MYSQL_DATABASE}
+
+</code></pre></section>
+        <section>
+            <h2 class="heading-color">docker-compose.yml</h2>
+            <pre><code>  mariadb:
+    image: mariadb
+    volumes:
+      - data-mysql:/data/db
+    environment:
+      - MYSQL_ROOT_PASSWORD=${APP_MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${APP_MYSQL_USER}
+      - MYSQL_PASSWORD=${APP_MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${APP_MYSQL_DATABASE}
+
+volumes:
+  data-mysql:
+    driver: local
+                </code></pre>
+                <pre>
+                    <code>$ docker-compose up -d --no-recreate
+$ docker-compose stop
+$ docker-compose down</code>
+                </pre>
+                <span><a href="https://github.com/prooph/proophessor-do" target="_blank" title="proophessor-do with Docker">example application</a></span>
+            </section>
+        </section>
+
+        <section>
+            <h2 class="third-color"><span class="heading-color">Production</span><br>Challenges</h2>
+            <h4 class="docker-color">
+                <span class="fragment">Orchestration</span>&nbsp;&nbsp;&nbsp;<span class="fragment">Stateful services</span><br><span class="fragment">Know-How</span>
+            </h4>
+            <aside class="notes">
+                <ul>
+                    <li>Docker SwarmMode, InfraKit, self-healing, resilience</li>
+                    <li>data persistence multi host env, volume driver</li>
+                    <li>developer infrastructure</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section data-background="/slides/img/blue-php-elephant.jpg">
+            <br/><br/>
+            <ul class="list-inline">
+                <li>
+                    <a href="https://github.com/sandrokeil" target="_blank" class="list-link" title="Github">
+                        <i class="fa fa-github"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://twitter.com/SandroKeil" target="_blank" class="list-link" title="Twitter">
+                        <i class="fa fa-twitter"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="http://de.linkedin.com/pub/sandro-keil/99/291/7b2" target="_blank" class="list-link"
+                       title="LinkedIn">
+                        <i class="fa fa-linkedin"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://www.xing.com/profile/Sandro_Keil" target="_blank" class="list-link" title="Xing">
+                        <i class="fa fa-xing"></i>
+                    </a>
+                </li>
+            </ul>
+            <h3 class="third-color">Questions ?</h3>
+            <p><a href="https://sandro-keil.de/blog/tag/profiling/" class="g-btn color_white outlined"><span>Visit My Website</span></a>
+        </section>
+    </div>
+</div>
+
+<div id="hidden" style="display:none;">
+    <div id="header">
+        <div id="footer-left">
+            <img src="/slides/docker-for-php-developers/img/phpruhr_logo_2016.png" style="height: 90px;" />
+        </div>
+        <div id="footer-right">
+            <p style="margin: 0 10px 5px 0">@sandrokeil</p>
+        </div>
+    </div>
+</div>
+
+<script src="/slides/revealjs/lib/js/head.min.js"></script>
+<script src="/slides/revealjs/js/reveal.min.js"></script>
+<script>
+    Reveal.initialize( {
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+        // Optional reveal.js plugins
+        dependencies: [
+            {
+                src: '/slides/revealjs/lib/js/classList.js', condition: function() {
+                return !document.body.classList;
+            }
+            },
+            {
+                src: '/slides/revealjs/plugin/markdown/marked.js', condition: function() {
+                return !!document.querySelector( '[data-markdown]' );
+            }
+            },
+            {
+                src: '/slides/revealjs/plugin/markdown/markdown.js', condition: function() {
+                return !!document.querySelector( '[data-markdown]' );
+            }
+            },
+            {
+                src: '/slides/revealjs/plugin/highlight/highlight.js', async: true, callback: function() {
+                hljs.initHighlightingOnLoad();
+            }
+            },
+            { src: '/slides/revealjs/plugin/zoom-js/zoom.js', async: true },
+            { src: '/slides/revealjs/plugin/notes/notes.js', async: true }
+        ]
+    } );
+
+</script>
+<script src="/slides/revealjs/js/jquery-2.2.4.min.js"></script>
+<script type="text/javascript">
+    // 3. On Reveal.js ready event, copy header/footer <div> into each `.slide-background` <div>
+    var header = $('#header').html();
+    if ( window.location.search.match( /print-pdf/gi ) ) {
+        Reveal.addEventListener( 'ready', function( event ) {
+            $('.slide-background').append(header);
+        });
+    }
+    else {
+        $('div.reveal').append(header);
+    }
+</script>
+</body>
+</html>

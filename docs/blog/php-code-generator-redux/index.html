@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>PHP Code Generator Redux</title>
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/apple-icon.png"/>
+    <link rel="stylesheet" type="text/css" href="/blog/assets/css/casperion.min.css?v=30fcd7d37c" />
+
+    <meta name="description" content="PHP code can be generated very well using an AST-based approach and a model like JSON schema or XML. Learn more about PHP code generation." />
+    <link rel="shortcut icon" href="/blog/favicon.ico" type="image/x-icon" />
+    <link rel="canonical" href="https://sandro-keil.de/blog/php-code-generator-redux/" />
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    <link rel="amphtml" href="https://sandro-keil.de/blog/php-code-generator-redux/amp/" />
+    
+    <meta property="og:site_name" content="Blog by Sandro Keil" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="PHP Code Generator Redux" />
+    <meta property="og:description" content="PHP code can be generated very well using an AST-based approach and a model like JSON schema or XML.  Learn more about PHP code generation." />
+    <meta property="og:url" content="https://sandro-keil.de/blog/php-code-generator-redux/" />
+    <meta property="og:image" content="https://sandro-keil.de/blog/content/images/2021/02/hexagons-5276934_1920.png" />
+    <meta property="article:published_time" content="2021-02-16T20:38:17.000Z" />
+    <meta property="article:modified_time" content="2021-02-16T20:44:46.000Z" />
+    <meta property="article:tag" content="PHP" />
+    
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="PHP Code Generator Redux" />
+    <meta name="twitter:description" content="PHP code can be generated very well using an AST-based approach and a model like JSON schema or XML.  Learn more about PHP code generation." />
+    <meta name="twitter:url" content="https://sandro-keil.de/blog/php-code-generator-redux/" />
+    <meta name="twitter:image" content="https://sandro-keil.de/blog/content/images/2021/02/hexagons-5276934_1920.png" />
+    <meta name="twitter:label1" content="Written by" />
+    <meta name="twitter:data1" content="Sandro Keil" />
+    <meta name="twitter:label2" content="Filed under" />
+    <meta name="twitter:data2" content="PHP" />
+    <meta name="twitter:site" content="@SandroKeil" />
+    <meta name="twitter:creator" content="@SandroKeil" />
+    <meta property="og:image:width" content="1920" />
+    <meta property="og:image:height" content="966" />
+    
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Blog by Sandro Keil",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://sandro-keil.de/blog/favicon.ico",
+            "width": 60,
+            "height": 60
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Sandro Keil",
+        "image": {
+            "@type": "ImageObject",
+            "url": "https://sandro-keil.de/blog/content/images/2018/08/ipc.jpg",
+            "width": 512,
+            "height": 512
+        },
+        "url": "https://sandro-keil.de/blog/author/sandrokeil/",
+        "sameAs": [
+            "https://github.com/sandrokeil",
+            "https://twitter.com/SandroKeil"
+        ]
+    },
+    "headline": "PHP Code Generator Redux",
+    "url": "https://sandro-keil.de/blog/php-code-generator-redux/",
+    "datePublished": "2021-02-16T20:38:17.000Z",
+    "dateModified": "2021-02-16T20:44:46.000Z",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://sandro-keil.de/blog/content/images/2021/02/hexagons-5276934_1920.png",
+        "width": 1920,
+        "height": 966
+    },
+    "keywords": "PHP",
+    "description": "PHP code can be generated very well using an AST-based approach and a model like JSON schema or XML.  Learn more about PHP code generation.",
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://sandro-keil.de/blog/"
+    }
+}
+    </script>
+
+    <script src="/blog/public/ghost-sdk.min.js?v=30fcd7d37c"></script>
+<script>
+ghost.init({
+	clientId: "ghost-frontend",
+	clientSecret: "4f941e65c7a0"
+});
+</script>
+    <meta name="generator" content="Ghost 2.0" />
+    <link rel="alternate" type="application/rss+xml" title="Blog by Sandro Keil" href="https://sandro-keil.de/blog/rss/" />
+    <script type="application/ld+json">
+    {
+      "@context" : "http://schema.org",
+      "@type": "Person",
+      "name": "Sandro Keil",
+      "image": "https://sandro-keil.de/blog/assets/img/sandro-keil.jpg",
+      "url": "https://sandro-keil.de",
+      "sameAs" : [
+          "https://twitter.com/SandroKeil",
+          "https://www.xing.com/profile/Sandro_Keil",
+          "https://github.com/sandrokeil"
+        ]
+      }
+    }
+    </script>
+</head>
+<body class="post-template tag-php">
+
+    <div class="site-wrapper">
+
+        
+
+<header class="site-header outer">
+    <div class="inner">
+        <nav class="site-nav">
+    <div class="site-nav-left">
+                <a class="site-nav-logo" href="https://sandro-keil.de/blog">Blog by Sandro Keil</a>
+            <ul class="nav" role="menu">
+    <li class="nav-talks" role="menuitem"><a href="https://sandro-keil.de/blog/tag/talks/">Talks</a></li>
+    <li class="nav-imprint" role="menuitem"><a href="https://sandro-keil.de/blog/imprint/">Imprint</a></li>
+    <li class="nav-privacy" role="menuitem"><a href="https://sandro-keil.de/blog/privacy/">Privacy</a></li>
+    <li class="nav-about-me" role="menuitem"><a href="https://sandro-keil.de">About me</a></li>
+</ul>
+
+    </div>
+    <div class="site-nav-right">
+        <div class="social-links">
+            <a href="#" class="social-link" id="search-btn"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 50 50" version="1.1" width="32px" height="32px">
+    <g id="surface1">
+        <path style=" " d="M 21 3 C 11.621094 3 4 10.621094 4 20 C 4 29.378906 11.621094 37 21 37 C 24.710938 37 28.140625 35.804688 30.9375 33.78125 L 44.09375 46.90625 L 46.90625 44.09375 L 33.90625 31.0625 C 36.460938 28.085938 38 24.222656 38 20 C 38 10.621094 30.378906 3 21 3 Z M 21 5 C 29.296875 5 36 11.703125 36 20 C 36 28.296875 29.296875 35 21 35 C 12.703125 35 6 28.296875 6 20 C 6 11.703125 12.703125 5 21 5 Z "/>
+    </g>
+</svg>
+</a>
+                <a class="social-link social-link-tw" href="https://twitter.com/SandroKeil" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M30.063 7.313c-.813 1.125-1.75 2.125-2.875 2.938v.75c0 1.563-.188 3.125-.688 4.625a15.088 15.088 0 0 1-2.063 4.438c-.875 1.438-2 2.688-3.25 3.813a15.015 15.015 0 0 1-4.625 2.563c-1.813.688-3.75 1-5.75 1-3.25 0-6.188-.875-8.875-2.625.438.063.875.125 1.375.125 2.688 0 5.063-.875 7.188-2.5-1.25 0-2.375-.375-3.375-1.125s-1.688-1.688-2.063-2.875c.438.063.813.125 1.125.125.5 0 1-.063 1.5-.25-1.313-.25-2.438-.938-3.313-1.938a5.673 5.673 0 0 1-1.313-3.688v-.063c.813.438 1.688.688 2.625.688a5.228 5.228 0 0 1-1.875-2c-.5-.875-.688-1.813-.688-2.75 0-1.063.25-2.063.75-2.938 1.438 1.75 3.188 3.188 5.25 4.25s4.313 1.688 6.688 1.813a5.579 5.579 0 0 1 1.5-5.438c1.125-1.125 2.5-1.688 4.125-1.688s3.063.625 4.188 1.813a11.48 11.48 0 0 0 3.688-1.375c-.438 1.375-1.313 2.438-2.563 3.188 1.125-.125 2.188-.438 3.313-.875z"/></svg>
+</a>
+        </div>
+            <a class="rss-button" href="https://feedly.com/i/subscription/feed/https://sandro-keil.de/blog/rss/" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="6.18" cy="17.82" r="2.18"/><path d="M4 4.44v2.83c7.03 0 12.73 5.7 12.73 12.73h2.83c0-8.59-6.97-15.56-15.56-15.56zm0 5.66v2.83c3.9 0 7.07 3.17 7.07 7.07h2.83c0-5.47-4.43-9.9-9.9-9.9z"/></svg>
+</a>
+    </div>
+</nav>
+    </div>
+</header>
+
+
+<main id="site-main" class="site-main outer">
+    <div class="inner">
+
+        <article class="post-full post tag-php featured ">
+
+            <header class="post-full-header">
+                <section class="post-full-meta">
+                    <time class="post-full-meta-date" datetime="2021-02-16">16 February 2021</time>
+                        <span class="date-divider">/</span> <a href="/blog/tag/php/">PHP</a>
+                </section>
+                <h1 class="post-full-title">PHP Code Generator Redux</h1>
+            </header>
+
+            <figure class="post-full-image" style="background-image: url(/blog/content/images/2021/02/hexagons-5276934_1920.png)">
+            </figure>
+
+            <section class="post-full-content">
+                <div class="post-content">
+                    <p>PHP is an imperative programming language and can also be used as a template engine. This allows programming language constructs and static text to be combined via placeholders or marked areas. In addition, several variants for string concatenation are available. It is also possible to write the generated code to different files. With PHP version 7.0 an Abstract Syntax Tree (AST) is supported. An AST represents a syntactically correct sentence of a programming language as a tree structure. Therefore, PHP is very well suited as a programming language for a code generator.</p>
+<p>Model Driven Software Development (MDSD) deals with the automatic creation of software systems based on models. A model-to-text transformation generates code for a specific platform. In a model-to-model transformation, an existing model is enriched with information or an entirely new model can be created.</p>
+<p>In order to be able to generate executable software, a domain-specific abstraction with formal modeling is required. Code is automatically generated from models, for instance based on the Unified Modeling Language (UML), a JSON schema, XML etc. Models thus not only serve to document the application software, but also represent the actual code. As many artifacts of a software system as possible should be derived from the formal models. Modeling provides a simplified representation of complex interrelationships. The model is an abstract representation of a software system to be developed. This can be represented both graphically and textually.</p>
+<p>The following sections describes which Open-Source PHP libraries can be used to generate PHP code.</p>
+<h2 id="phpfilter">PHP Filter</h2>
+<p>The library <a href="https://github.com/open-code-modeling/php-filter" title="PHP Filter on GitHub">open-code-modeling/php-filter</a> provides common filter for PHP code generation. There are preconfigured filters to filter a name / label for class names, constants, properties, methods and namespaces. This library uses <em>laminas/laminas-filter</em> as a great foundation.</p>
+<h2 id="phpcodeast">PHP Code AST</h2>
+<p>It is a challenge to combine generated and handwritten code. The library <a href="https://github.com/open-code-modeling/php-code-ast" title="PHP Code AST on GitHub">open-code-modeling/php-code-ast</a> ships with an easy to use high level object-oriented API and supports also reverse engineering of your PHP code. During code generation, previously generated code is then analyzed using an AST-based approach. This makes it possible to distinguish between already generated and handwritten code. An approach such as protected areas can thus be dispensed with. Furthermore, the AST-based approach allows parts of the code to be specifically modified. This library uses <em>nikic/php-parser</em> as a great foundation.</p>
+<p>Take a look at a straightforward example of generating a class using the <code>ClassBuilder</code> high level API.</p>
+<pre><code class="language-php">use OpenCodeModeling\CodeAst\Builder;
+
+$parser = (new PhpParser\ParserFactory())-&gt;create(PhpParser\ParserFactory::ONLY_PHP7);
+$printer = new PhpParser\PrettyPrinter\Standard(['shortArraySyntax' =&gt; true]);
+
+$parser = (new PhpParser\ParserFactory())-&gt;create(PhpParser\ParserFactory::ONLY_PHP7);
+$printer = new PhpParser\PrettyPrinter\Standard(['shortArraySyntax' =&gt; true]);
+
+$code = ''; // or file_get_contents() of file
+$ast = $parser-&gt;parse($code);
+
+$classBuilder = Builder\ClassBuilder::fromScratch('TestClass', 'My\\Awesome\\Service');
+$classBuilder
+    -&gt;setFinal(true)
+    -&gt;setExtends('BaseClass')
+    -&gt;setNamespaceImports('Foo\\Bar')
+    -&gt;setImplements('\\Iterator', 'Bar')
+    -&gt;addConstant(
+        Builder\ClassConstBuilder::fromScratch('AWESOME', true)
+    )
+    -&gt;addMethod(
+        Builder\ClassMethodBuilder::fromScratch('sayHello')
+            -&gt;setBody(&quot;echo 'Hello World!';&quot;)
+            -&gt;setReturnType('void')
+    );
+
+$nodeTraverser = new PhpParser\NodeTraverser();
+
+$classBuilder-&gt;injectVisitors($nodeTraverser, $parser);
+
+print_r($printer-&gt;prettyPrintFile($nodeTraverser-&gt;traverse($ast)));
+</code></pre>
+<p>The code above will generate the following PHP code.</p>
+<pre><code class="language-php">&lt;?php
+
+declare (strict_types=1);
+namespace My\Awesome\Service;
+
+use Foo\Bar;
+final class TestClass extends BaseClass implements \Iterator, Bar
+{
+    public const AWESOME = true;
+    public function sayHello() : void
+    {
+        echo 'Hello World!';
+    }
+}
+</code></pre>
+<h2 id="jsonschematophp">JSON Schema to PHP</h2>
+<p>A JSON schema can be used as a model for code generation. For instance it can be used to create value objects. The library <a href="https://github.com/open-code-modeling/json-schema-to-php" title="JSON Schema to PHP on GitHub">open-code-modeling/json-schema-to-php</a> parses JSON schema files and provides an API to easily generate code from a JSON schema.</p>
+<p>Consider you have this JSON schema.</p>
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;required&quot;: [&quot;buildingId&quot;, &quot;name&quot;],
+    &quot;additionalProperties&quot;: false,
+    &quot;definitions&quot;: {
+        &quot;name&quot;: {
+            &quot;type&quot;: [&quot;string&quot;, &quot;null&quot;]
+        }
+    },
+    &quot;properties&quot;: {
+        &quot;buildingId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$&quot;
+        },
+        &quot;name&quot;: {
+            &quot;$ref&quot;: &quot;#/definitions/name&quot;
+        }
+    }
+}
+</code></pre>
+<p>You can create a <code>TypeSet</code> definition from the JSON schema above with the following code.</p>
+<pre><code class="language-php">&lt;?php
+use OpenCodeModeling\JsonSchemaToPhp\Type;
+use OpenCodeModeling\JsonSchemaToPhp\Type\TypeSet;
+use OpenCodeModeling\JsonSchemaToPhp\Type\ObjectType;
+use OpenCodeModeling\JsonSchemaToPhp\Type\StringType;
+
+$decodedJson = \json_decode($jsonSchema, true);
+
+$typeSet = Type::fromDefinition($decodedJson);
+
+/** @var ObjectType $type */
+$type = $typeSet-&gt;first();
+
+$type-&gt;additionalProperties(); // false
+
+$properties = $type-&gt;properties();
+
+/** @var TypeSet $buildingIdTypeSet */
+$buildingIdTypeSet = $properties['buildingId'];
+
+/** @var StringType $buildingId */
+$buildingId = $buildingIdTypeSet-&gt;first();
+
+$buildingId-&gt;name(); // buildingId
+$buildingId-&gt;type(); // string
+$buildingId-&gt;pattern(); // ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$
+$buildingId-&gt;isRequired(); // true
+$buildingId-&gt;isNullable(); // false
+// ...
+</code></pre>
+<h2 id="jsonschematophpast">JSON Schema to PHP AST</h2>
+<p>The library <a href="https://github.com/open-code-modeling/json-schema-to-php-ast" title="JSON Schema to PHP AST on GitHub">open-code-modeling/json-schema-to-php-ast</a> compiles a JSON schema to PHP classes / value objects via PHP AST. It provides factories to create <em>nikic/php-parser</em> node visitors or <em>open-code-modeling/php-code-ast</em> class builder objects from JSON schema. It supports the the JSON schema types <em>string</em>, <em>enum</em>, <em>integer</em>, <em>boolean</em>, <em>number</em> and <em>array</em>. The type <em>string</em> supports also the formats <em>date-time</em>, <em>ISO 8601</em>, <em>uuid</em> and <em>BCP 47</em>.</p>
+<h2 id="phpcodegenerator">PHP Code Generator</h2>
+<p>For sophisticated PHP code generation workflows there is the library <a href="https://github.com/open-code-modeling/php-code-generator" title="PHP Code Generator on GitHub">open-code-modeling/php-code-generator</a>. It provides the runtime environment for various components. These can be interconnected via a configuration. Thus, individual operational sequences can be provided and combined. By this modular structure the code generator can be individually extended and configured by developers.</p>
+<p>The code beneath shows a simple Hello World workflow.</p>
+<pre><code class="language-php">use OpenCodeModeling\CodeGenerator;
+
+$workflowContext = new CodeGenerator\Workflow\WorkflowContextMap();
+
+// initialize workflow with some data
+$workflowContext-&gt;put('hello', 'Hello ');
+
+$config = new CodeGenerator\Config\Workflow(
+    new CodeGenerator\Workflow\ComponentDescriptionWithSlot(
+        function (string $input) {
+            return $input . 'World';
+        },
+        'greetings', // output slot
+        'hello' // input slot
+    ),
+    new CodeGenerator\Workflow\ComponentDescriptionWithInputSlotOnly(
+        function (string $input) {
+            echo $input; // prints Hello World
+        },
+        'greetings',
+    )
+);
+
+$workflowEngine = new CodeGenerator\Workflow\WorkflowEngine();
+$workflowEngine-&gt;run($workflowContext, ...$config-&gt;componentDescriptions());
+</code></pre>
+<h2 id="conclusion">Conclusion</h2>
+<p>PHP Code generation using an AST-based approach allows already generated code to be matched with new code. Another advantage of this approach is that manually added code is not overwritten. Various detection mechanisms have been implemented for this purpose.</p>
+<p>This article shows that PHP code can be generated very well using an AST-based approach and a model in PHP. If you find it useful please spread the word and star the libraries on <a href="https://github.com/open-code-modeling" title="Open Code Modeling on GitHub">GitHub</a>.</p>
+
+                </div>
+            </section>
+
+
+            <footer class="post-full-footer">
+
+
+                    
+<section class="author-card">
+        <img class="author-profile-image" src="/blog/content/images/2018/08/ipc.jpg" alt="Sandro Keil" />
+    <section class="author-card-content">
+        <h4 class="author-card-name"><a href="/blog/author/sandrokeil/">Sandro Keil</a></h4>
+            <p>Sandro Keil is a Senior Software Developer and IT-Consultant and has more than 15 years experience in web development as Full Stack Developer.</p>
+    </section>
+</section>
+<div class="post-full-footer-right">
+    <a class="author-card-button" href="/blog/author/sandrokeil/">Read More</a>
+</div>
+
+
+            </footer>
+
+
+        </article>
+
+    </div>
+</main>
+
+<aside class="read-next outer">
+    <div class="inner">
+        <div class="read-next-feed">
+                <article class="read-next-card"
+                            style="background-image: url(/blog/content/images/2018/08/home-2.jpg)"
+                >
+                    <header class="read-next-card-header">
+                        <small class="read-next-card-header-sitetitle">&mdash; Blog by Sandro Keil &mdash;</small>
+                        <h3 class="read-next-card-header-title"><a href="/blog/tag/php/">PHP</a></h3>
+                    </header>
+                    <div class="read-next-divider"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 14.5s2 3 5 3 5.5-2.463 5.5-5.5S21 6.5 18 6.5c-5 0-7 11-12 11C2.962 17.5.5 15.037.5 12S3 6.5 6 6.5s4.5 3.5 4.5 3.5"/></svg>
+</div>
+                    <div class="read-next-card-content">
+                        <ul>
+                            <li><a href="/blog/asynchronous-prooph-messages-via-amazon-aws-sqs/">Asynchronous prooph messages via Amazon AWS SQS</a></li>
+                            <li><a href="/blog/my-conference-talks-in-september/">My conference talks in September</a></li>
+                            <li><a href="/blog/php-7-expectations-assertions/">PHP 7 Expectations / Assertions</a></li>
+                        </ul>
+                    </div>
+                    <footer class="read-next-card-footer">
+                        <a href="/blog/tag/php/">See all 15 posts →</a>
+                    </footer>
+                </article>
+
+
+                <article class="post-card post tag-docker">
+        <a class="post-card-image-link" href="/blog/dockerized-desktop-apps-phpstorm-git-postman-xdebug-remote-debugging/">
+            <div class="post-card-image" style="background-image: url(/blog/content/images/2019/01/tools-1209300_1920.jpg)"></div>
+        </a>
+    <div class="post-card-content">
+        <a class="post-card-content-link" href="/blog/dockerized-desktop-apps-phpstorm-git-postman-xdebug-remote-debugging/">
+            <header class="post-card-header">
+                    <span class="post-card-tags">Docker</span>
+                <h2 class="post-card-title">Dockerized desktop apps - Development with GIT, PhpStorm and Postman</h2>
+            </header>
+            <section class="post-card-excerpt">
+                <p>In this Dockerized desktop apps part you will learn how to setup a development suite with PhpStorm, GIT and Postman.</p>
+            </section>
+        </a>
+        <footer class="post-card-meta">
+
+            <ul class="author-list">
+                <li class="author-list-item">
+
+                    <div class="author-name-tooltip">
+                        Sandro Keil
+                    </div>
+
+                        <a href="/blog/author/sandrokeil/" class="static-avatar"><img class="author-profile-image" src="/blog/content/images/2018/08/ipc.jpg" alt="Sandro Keil" /></a>
+                </li>
+            </ul>
+
+            <span class="reading-time">3 min read</span>
+
+        </footer>
+    </div>
+</article>
+
+        </div>
+    </div>
+</aside>
+
+<div class="floating-header">
+    <div class="floating-header-logo">
+        <a href="https://sandro-keil.de/blog">
+            <span>Blog by Sandro Keil</span>
+        </a>
+    </div>
+    <span class="floating-header-divider">&mdash;</span>
+    <div class="floating-header-title">PHP Code Generator Redux</div>
+    <div class="floating-header-share">
+        <div class="floating-header-share-label">Share this <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M7.5 15.5V4a1.5 1.5 0 1 1 3 0v4.5h2a1 1 0 0 1 1 1h2a1 1 0 0 1 1 1H18a1.5 1.5 0 0 1 1.5 1.5v3.099c0 .929-.13 1.854-.385 2.748L17.5 23.5h-9c-1.5-2-5.417-8.673-5.417-8.673a1.2 1.2 0 0 1 1.76-1.605L7.5 15.5zm6-6v2m-3-3.5v3.5m6-1v2"/>
+</svg>
+</div>
+        <a class="floating-header-share-tw" href="https://twitter.com/share?text=PHP%20Code%20Generator%20Redux&amp;url=https://sandro-keil.de/blog/php-code-generator-redux/"
+            onclick="window.open(this.href, 'share-twitter', 'width=550,height=235');return false;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M30.063 7.313c-.813 1.125-1.75 2.125-2.875 2.938v.75c0 1.563-.188 3.125-.688 4.625a15.088 15.088 0 0 1-2.063 4.438c-.875 1.438-2 2.688-3.25 3.813a15.015 15.015 0 0 1-4.625 2.563c-1.813.688-3.75 1-5.75 1-3.25 0-6.188-.875-8.875-2.625.438.063.875.125 1.375.125 2.688 0 5.063-.875 7.188-2.5-1.25 0-2.375-.375-3.375-1.125s-1.688-1.688-2.063-2.875c.438.063.813.125 1.125.125.5 0 1-.063 1.5-.25-1.313-.25-2.438-.938-3.313-1.938a5.673 5.673 0 0 1-1.313-3.688v-.063c.813.438 1.688.688 2.625.688a5.228 5.228 0 0 1-1.875-2c-.5-.875-.688-1.813-.688-2.75 0-1.063.25-2.063.75-2.938 1.438 1.75 3.188 3.188 5.25 4.25s4.313 1.688 6.688 1.813a5.579 5.579 0 0 1 1.5-5.438c1.125-1.125 2.5-1.688 4.125-1.688s3.063.625 4.188 1.813a11.48 11.48 0 0 0 3.688-1.375c-.438 1.375-1.313 2.438-2.563 3.188 1.125-.125 2.188-.438 3.313-.875z"/></svg>
+        </a>
+        <a class="floating-header-share-fb" href="https://www.facebook.com/sharer/sharer.php?u=https://sandro-keil.de/blog/php-code-generator-redux/"
+            onclick="window.open(this.href, 'share-facebook','width=580,height=296');return false;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M19 6h5V0h-5c-3.86 0-7 3.14-7 7v3H8v6h4v16h6V16h5l1-6h-6V7c0-.542.458-1 1-1z"/></svg>
+        </a>
+    </div>
+    <progress id="reading-progress" class="progress" value="0">
+        <div class="progress-container">
+            <span class="progress-bar"></span>
+        </div>
+    </progress>
+</div>
+
+
+
+
+        <footer class="site-footer outer">
+            <div class="site-footer-content inner">
+                <section class="copyright"><a href="https://sandro-keil.de/blog">Blog by Sandro Keil</a> &copy; 2024</section>
+                <nav class="site-footer-nav">
+                    <a href="https://sandro-keil.de/blog">Latest Posts</a>
+                    
+                    <a href="https://twitter.com/SandroKeil" target="_blank" rel="noopener">Twitter</a>
+                    <a href="https://sandro-keil.de/blog/2014/12/10/casperion-ghost-theme/" target="_blank" title="Casperion Ghost Theme" rel="noopener">Casperion Ghost Theme</a>
+                </nav>
+            </div>
+        </footer>
+
+    </div>
+
+
+    <script type="text/javascript" src="/blog/assets/js/jquery-3.2.1.min.js?v=30fcd7d37c"></script>
+
+
+    <script>
+
+// NOTE: Scroll performance is poor in Safari
+// - this appears to be due to the events firing much more slowly in Safari.
+//   Dropping the scroll event and using only a raf loop results in smoother
+//   scrolling but continuous processing even when not scrolling
+$(document).ready(function () {
+    // Start fitVids
+    var $postContent = $(".post-full-content");
+    $postContent.fitVids();
+    // End fitVids
+
+    var progressBar = document.querySelector('#reading-progress');
+    var header = document.querySelector('.floating-header');
+    var title = document.querySelector('.post-full-title');
+
+    var lastScrollY = window.scrollY;
+    var lastWindowHeight = window.innerHeight;
+    var lastDocumentHeight = $(document).height();
+    var ticking = false;
+
+    function onScroll() {
+        lastScrollY = window.scrollY;
+        requestTick();
+    }
+
+    function onResize() {
+        lastWindowHeight = window.innerHeight;
+        lastDocumentHeight = $(document).height();
+        requestTick();
+    }
+
+    function requestTick() {
+        if (!ticking) {
+            requestAnimationFrame(update);
+        }
+        ticking = true;
+    }
+
+    function update() {
+        var trigger = title.getBoundingClientRect().top + window.scrollY;
+        var triggerOffset = title.offsetHeight + 35;
+        var progressMax = lastDocumentHeight - lastWindowHeight;
+
+        // show/hide floating header
+        if (lastScrollY >= trigger + triggerOffset) {
+            header.classList.add('floating-active');
+        } else {
+            header.classList.remove('floating-active');
+        }
+
+        progressBar.setAttribute('max', progressMax);
+        progressBar.setAttribute('value', lastScrollY);
+
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', onScroll, {passive: true});
+    window.addEventListener('resize', onResize, false);
+
+    update();
+
+});
+</script>
+
+
+    <script>
+        (function ($) {
+            'use strict';
+
+            $( document ).ready( function () {
+                if ($("pre code")[0]) {
+                    $.getScript("/blog/assets/js/highlight.min.js?v=30fcd7d37c", function() {
+                        $("pre code").each(function (i, e) {
+                            hljs.highlightBlock(e)
+                        });
+                    });
+                }
+            } );
+        }( jQuery ));
+    </script>
+    
+
+    <div id="search-overlay" class="search-overlay block">
+        <div class="centered">
+            <div id='search-box' class="search-box">
+                <a href="#" id="close-btn" class="close-btn"><?xml version="1.0"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" fill="#ffffff" width="60px" height="60px">
+    <path d="M 7 4 C 6.744125 4 6.4879687 4.0974687 6.2929688 4.2929688 L 4.2929688 6.2929688 C 3.9019687 6.6839688 3.9019687 7.3170313 4.2929688 7.7070312 L 11.585938 15 L 4.2929688 22.292969 C 3.9019687 22.683969 3.9019687 23.317031 4.2929688 23.707031 L 6.2929688 25.707031 C 6.6839688 26.098031 7.3170313 26.098031 7.7070312 25.707031 L 15 18.414062 L 22.292969 25.707031 C 22.682969 26.098031 23.317031 26.098031 23.707031 25.707031 L 25.707031 23.707031 C 26.098031 23.316031 26.098031 22.682969 25.707031 22.292969 L 18.414062 15 L 25.707031 7.7070312 C 26.098031 7.3170312 26.098031 6.6829688 25.707031 6.2929688 L 23.707031 4.2929688 C 23.316031 3.9019687 22.682969 3.9019687 22.292969 4.2929688 L 15 11.585938 L 7.7070312 4.2929688 C 7.5115312 4.0974687 7.255875 4 7 4 z" fill="#ffffff"/>
+</svg>
+</a>
+                <form id="search-form" class="search-form" onsubmit="return false;">
+                    <input id="search-field" class="search-field" name="q" placeholder="Search" type="text"/>
+                </form>
+            </div>
+            <section class="search-results" id="results"></section>
+        </div>
+    </div>
+    <script type="text/javascript" src="/blog/assets/js/casperion.min.js?v=30fcd7d37c"></script>
+</body>
+</html>

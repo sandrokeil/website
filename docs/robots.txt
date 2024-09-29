@@ -1,0 +1,3 @@
+User-agent: *
+Sitemap: https://sandro-keil.de/blog/sitemap.xml
+Disallow: /blog/ghost/

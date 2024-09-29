@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>Vagrant remote PHP &amp; CLI debugging with PHPStorm</title>
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/apple-icon.png"/>
+    <link rel="stylesheet" type="text/css" href="/blog/assets/css/casperion.min.css?v=30fcd7d37c" />
+
+    <meta name="description" content="How to enable PHP remote debugging in PHPStorm if Vagrant is used and using a short Shell script for remote PHP CLI debugging." />
+    <link rel="shortcut icon" href="/blog/favicon.ico" type="image/x-icon" />
+    <link rel="canonical" href="https://sandro-keil.de/blog/vagrant-remote-php-cli-debugging/" />
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    <link rel="amphtml" href="https://sandro-keil.de/blog/vagrant-remote-php-cli-debugging/amp/" />
+    
+    <meta property="og:site_name" content="Blog by Sandro Keil" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Vagrant remote PHP &amp; CLI debugging with PHPStorm" />
+    <meta property="og:description" content="How to enable PHP remote debugging in PHPStorm if Vagrant is used and using a short Shell script for remote PHP CLI debugging." />
+    <meta property="og:url" content="https://sandro-keil.de/blog/vagrant-remote-php-cli-debugging/" />
+    <meta property="og:image" content="https://sandro-keil.de/blog/content/images/2014/12/bug.jpg" />
+    <meta property="article:published_time" content="2014-12-30T17:13:48.000Z" />
+    <meta property="article:modified_time" content="2015-04-20T15:51:03.000Z" />
+    <meta property="article:tag" content="PHP" />
+    <meta property="article:tag" content="Vagrant" />
+    
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Vagrant remote PHP &amp; CLI debugging with PHPStorm" />
+    <meta name="twitter:description" content="How to enable PHP remote debugging in PHPStorm if Vagrant is used and using a short Shell script for remote PHP CLI debugging." />
+    <meta name="twitter:url" content="https://sandro-keil.de/blog/vagrant-remote-php-cli-debugging/" />
+    <meta name="twitter:image" content="https://sandro-keil.de/blog/content/images/2014/12/bug.jpg" />
+    <meta name="twitter:label1" content="Written by" />
+    <meta name="twitter:data1" content="Sandro Keil" />
+    <meta name="twitter:label2" content="Filed under" />
+    <meta name="twitter:data2" content="PHP, Vagrant" />
+    <meta name="twitter:site" content="@SandroKeil" />
+    <meta name="twitter:creator" content="@SandroKeil" />
+    <meta property="og:image:width" content="1024" />
+    <meta property="og:image:height" content="661" />
+    
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Blog by Sandro Keil",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://sandro-keil.de/blog/favicon.ico",
+            "width": 60,
+            "height": 60
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Sandro Keil",
+        "image": {
+            "@type": "ImageObject",
+            "url": "https://sandro-keil.de/blog/content/images/2018/08/ipc.jpg",
+            "width": 512,
+            "height": 512
+        },
+        "url": "https://sandro-keil.de/blog/author/sandrokeil/",
+        "sameAs": [
+            "https://github.com/sandrokeil",
+            "https://twitter.com/SandroKeil"
+        ]
+    },
+    "headline": "Vagrant remote PHP &amp; CLI debugging with PHPStorm",
+    "url": "https://sandro-keil.de/blog/vagrant-remote-php-cli-debugging/",
+    "datePublished": "2014-12-30T17:13:48.000Z",
+    "dateModified": "2015-04-20T15:51:03.000Z",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://sandro-keil.de/blog/content/images/2014/12/bug.jpg",
+        "width": 1024,
+        "height": 661
+    },
+    "keywords": "PHP, Vagrant",
+    "description": "How to enable PHP remote debugging in PHPStorm if Vagrant is used and using a short Shell script for remote PHP CLI debugging.",
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://sandro-keil.de/blog/"
+    }
+}
+    </script>
+
+    <script src="/blog/public/ghost-sdk.min.js?v=30fcd7d37c"></script>
+<script>
+ghost.init({
+	clientId: "ghost-frontend",
+	clientSecret: "4f941e65c7a0"
+});
+</script>
+    <meta name="generator" content="Ghost 2.0" />
+    <link rel="alternate" type="application/rss+xml" title="Blog by Sandro Keil" href="https://sandro-keil.de/blog/rss/" />
+    <script type="application/ld+json">
+    {
+      "@context" : "http://schema.org",
+      "@type": "Person",
+      "name": "Sandro Keil",
+      "image": "https://sandro-keil.de/blog/assets/img/sandro-keil.jpg",
+      "url": "https://sandro-keil.de",
+      "sameAs" : [
+          "https://twitter.com/SandroKeil",
+          "https://www.xing.com/profile/Sandro_Keil",
+          "https://github.com/sandrokeil"
+        ]
+      }
+    }
+    </script>
+</head>
+<body class="post-template tag-php tag-vagrant">
+
+    <div class="site-wrapper">
+
+        
+
+<header class="site-header outer">
+    <div class="inner">
+        <nav class="site-nav">
+    <div class="site-nav-left">
+                <a class="site-nav-logo" href="https://sandro-keil.de/blog">Blog by Sandro Keil</a>
+            <ul class="nav" role="menu">
+    <li class="nav-talks" role="menuitem"><a href="https://sandro-keil.de/blog/tag/talks/">Talks</a></li>
+    <li class="nav-imprint" role="menuitem"><a href="https://sandro-keil.de/blog/imprint/">Imprint</a></li>
+    <li class="nav-privacy" role="menuitem"><a href="https://sandro-keil.de/blog/privacy/">Privacy</a></li>
+    <li class="nav-about-me" role="menuitem"><a href="https://sandro-keil.de">About me</a></li>
+</ul>
+
+    </div>
+    <div class="site-nav-right">
+        <div class="social-links">
+            <a href="#" class="social-link" id="search-btn"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 50 50" version="1.1" width="32px" height="32px">
+    <g id="surface1">
+        <path style=" " d="M 21 3 C 11.621094 3 4 10.621094 4 20 C 4 29.378906 11.621094 37 21 37 C 24.710938 37 28.140625 35.804688 30.9375 33.78125 L 44.09375 46.90625 L 46.90625 44.09375 L 33.90625 31.0625 C 36.460938 28.085938 38 24.222656 38 20 C 38 10.621094 30.378906 3 21 3 Z M 21 5 C 29.296875 5 36 11.703125 36 20 C 36 28.296875 29.296875 35 21 35 C 12.703125 35 6 28.296875 6 20 C 6 11.703125 12.703125 5 21 5 Z "/>
+    </g>
+</svg>
+</a>
+                <a class="social-link social-link-tw" href="https://twitter.com/SandroKeil" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M30.063 7.313c-.813 1.125-1.75 2.125-2.875 2.938v.75c0 1.563-.188 3.125-.688 4.625a15.088 15.088 0 0 1-2.063 4.438c-.875 1.438-2 2.688-3.25 3.813a15.015 15.015 0 0 1-4.625 2.563c-1.813.688-3.75 1-5.75 1-3.25 0-6.188-.875-8.875-2.625.438.063.875.125 1.375.125 2.688 0 5.063-.875 7.188-2.5-1.25 0-2.375-.375-3.375-1.125s-1.688-1.688-2.063-2.875c.438.063.813.125 1.125.125.5 0 1-.063 1.5-.25-1.313-.25-2.438-.938-3.313-1.938a5.673 5.673 0 0 1-1.313-3.688v-.063c.813.438 1.688.688 2.625.688a5.228 5.228 0 0 1-1.875-2c-.5-.875-.688-1.813-.688-2.75 0-1.063.25-2.063.75-2.938 1.438 1.75 3.188 3.188 5.25 4.25s4.313 1.688 6.688 1.813a5.579 5.579 0 0 1 1.5-5.438c1.125-1.125 2.5-1.688 4.125-1.688s3.063.625 4.188 1.813a11.48 11.48 0 0 0 3.688-1.375c-.438 1.375-1.313 2.438-2.563 3.188 1.125-.125 2.188-.438 3.313-.875z"/></svg>
+</a>
+        </div>
+            <a class="rss-button" href="https://feedly.com/i/subscription/feed/https://sandro-keil.de/blog/rss/" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="6.18" cy="17.82" r="2.18"/><path d="M4 4.44v2.83c7.03 0 12.73 5.7 12.73 12.73h2.83c0-8.59-6.97-15.56-15.56-15.56zm0 5.66v2.83c3.9 0 7.07 3.17 7.07 7.07h2.83c0-5.47-4.43-9.9-9.9-9.9z"/></svg>
+</a>
+    </div>
+</nav>
+    </div>
+</header>
+
+
+<main id="site-main" class="site-main outer">
+    <div class="inner">
+
+        <article class="post-full post tag-php tag-vagrant featured ">
+
+            <header class="post-full-header">
+                <section class="post-full-meta">
+                    <time class="post-full-meta-date" datetime="2014-12-30">30 December 2014</time>
+                        <span class="date-divider">/</span> <a href="/blog/tag/php/">PHP</a>
+                </section>
+                <h1 class="post-full-title">Vagrant remote PHP &amp; CLI debugging with PHPStorm</h1>
+            </header>
+
+            <figure class="post-full-image" style="background-image: url(/blog/content/images/2014/12/bug.jpg)">
+            </figure>
+
+            <section class="post-full-content">
+                <div class="post-content">
+                    <p>First we will cover how to enable PHP remote debugging in PHPStorm if Vagrant is used and because this is so easy we also write a short Shell script to use remote PHP CLI debugging e. g. for Cronjob scripts or unit tests.</p>
+<p>If you don't have a Vagrant box you can use my <a href="https://github.com/sandrokeil/vagrant-librarian-puppet">vagrant-librarian-puppet example</a>. If you use this Vagrant box you can skip &quot;Enable Xdebug PHP extension&quot; and the URL is <code>http://localhost:8080/</code>.</p>
+<h2 id="enablexdebugphpextension">Enable Xdebug PHP extension</h2>
+<p>To enable debugging you must configure Xdebug. Make sure you have installed the PHP Xdebug extension (<code>sudo apt-get install php5-xdebug</code>). Open your <code>/etc/php5/conf.d/20-xdebug.ini</code> (path depends on OS) and add the following lines:</p>
+<pre><code>xdebug.default_enable=1
+xdebug.remote_enable=1
+xdebug.remote_handler=dbgp
+xdebug.remote_host=10.0.2.2
+xdebug.remote_port=9000
+xdebug.remote_autostart=0
+xdebug.remote_connect_back=1
+</code></pre>
+<p>The important point is <code>xdebug.remote_host</code> which can change on other system configurations, but it should work for the most common use cases. This IP address is the gateway of the vagrant box.</p>
+<h2 id="remotephpdebugging">Remote PHP debugging</h2>
+<p>To start debugging you must set a cookie because autostart debugging is not enabled. There is a great Firefox add-on &quot;The easiest Xdebug&quot;. If the cookie is set and you have enabled listening for incoming debug connections in PHPStorm a popup window should appear to configure your PHP servers. To avoid upcoming popups open the settings <code>File -&gt; Settings -&gt; Languages &amp; Frameworks -&gt; PHP -&gt; Server</code> and remove the path of the file and set only the project root path. Don't forget to set a breakpoint in your PHP file.<br>
+<img src="/blog/content/images/2014/12/vagrant-xdebug-settings.jpg" alt="Vagrant xDebug settings"></p>
+<h2 id="remotephpclidebugging">Remote PHP CLI debugging</h2>
+<p>A Shell script is necessary for remote CLI debugging. Please create a file in your vagrant box with name <code>cli_debug.sh</code> and put the following lines in this file.</p>
+<pre><code>#!/bin/bash
+export XDEBUG_CONFIG=&quot;idekey=PHPSTORM&quot; &amp;&amp;
+export PHP_IDE_CONFIG=&quot;serverName=application&quot; &amp;&amp;
+php &quot;$@&quot;
+</code></pre>
+<p>To enable debugging you must specify the <code>idekey</code> and the <code>serverName</code>. PHPStorm uses the <code>serverName</code> to determine the right server. Copy the previous server config and rename it to <code>application</code>.<br>
+<img src="/blog/content/images/2014/12/vagrant-xdebug-settings-cli.jpg" alt="Vagrant xDebug settings cli"><br>
+Make this file executable with <code>chmod +x cli_debug.sh</code> and now you can start debugging of PHP CLI scripts with <code>./cli_debug.sh [Path to your PHP file]</code>. If you use the <a href="https://github.com/sandrokeil/vagrant-librarian-puppet">vagrant-librarian-puppet example</a> you can test it with <code>./cli_debug.sh /vagrant/public/index.php</code>. Don't forget to set a breakpoint in your PHP file.</p>
+<h2 id="vagrantsshconnectiontimeouts">Vagrant SSH connection timeouts</h2>
+<p>On Windows 7 I have sometimes SSH connection timeouts. To solve this problem cancel the Vagrant up process (Strg + C) and execute <code>vagrant reload</code> or stop the box in VirtualBox and start it again with <code>vagrant up</code>, then it works. I don't know why this happens.</p>
+<h2 id="resources">Resources</h2>
+<ul>
+<li><a href="http://xdebug.org/" title="Xdebug extension for PHP">Xdebug extension for PHP</a></li>
+<li>Firefox extension <a href="http://manual.pohape.ru/xdebug/" title="The easiest Xdebug">The easiest Xdebug</a></li>
+<li>Vagrant box <a href="https://github.com/sandrokeil/vagrant-librarian-puppet" title="vagrant-librarian-puppet example">vagrant-librarian-puppet</a></li>
+</ul>
+<blockquote>
+<p>Article picture: <a href="https://www.flickr.com/photos/guitavares/1703256541/">code bug</a> by <a href="https://www.flickr.com/people/guitavares/">gui.tavares</a> under <a href="https://creativecommons.org/licenses/by-nc/2.0/">CC BY-NC 2.0</a></p>
+</blockquote>
+
+                </div>
+            </section>
+
+
+            <footer class="post-full-footer">
+
+
+                    
+<section class="author-card">
+        <img class="author-profile-image" src="/blog/content/images/2018/08/ipc.jpg" alt="Sandro Keil" />
+    <section class="author-card-content">
+        <h4 class="author-card-name"><a href="/blog/author/sandrokeil/">Sandro Keil</a></h4>
+            <p>Sandro Keil is a Senior Software Developer and IT-Consultant and has more than 15 years experience in web development as Full Stack Developer.</p>
+    </section>
+</section>
+<div class="post-full-footer-right">
+    <a class="author-card-button" href="/blog/author/sandrokeil/">Read More</a>
+</div>
+
+
+            </footer>
+
+
+        </article>
+
+    </div>
+</main>
+
+<aside class="read-next outer">
+    <div class="inner">
+        <div class="read-next-feed">
+                <article class="read-next-card"
+                            style="background-image: url(/blog/content/images/2018/08/home-2.jpg)"
+                >
+                    <header class="read-next-card-header">
+                        <small class="read-next-card-header-sitetitle">&mdash; Blog by Sandro Keil &mdash;</small>
+                        <h3 class="read-next-card-header-title"><a href="/blog/tag/php/">PHP</a></h3>
+                    </header>
+                    <div class="read-next-divider"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 14.5s2 3 5 3 5.5-2.463 5.5-5.5S21 6.5 18 6.5c-5 0-7 11-12 11C2.962 17.5.5 15.037.5 12S3 6.5 6 6.5s4.5 3.5 4.5 3.5"/></svg>
+</div>
+                    <div class="read-next-card-content">
+                        <ul>
+                            <li><a href="/blog/php-code-generator-redux/">PHP Code Generator Redux</a></li>
+                            <li><a href="/blog/asynchronous-prooph-messages-via-amazon-aws-sqs/">Asynchronous prooph messages via Amazon AWS SQS</a></li>
+                            <li><a href="/blog/my-conference-talks-in-september/">My conference talks in September</a></li>
+                        </ul>
+                    </div>
+                    <footer class="read-next-card-footer">
+                        <a href="/blog/tag/php/">See all 15 posts →</a>
+                    </footer>
+                </article>
+
+                <article class="post-card post tag-php tag-vagrant">
+        <a class="post-card-image-link" href="/blog/remote-phpunit-code-coverage/">
+            <div class="post-card-image" style="background-image: url(/blog/content/images/2015/01/crossing-paths.jpg)"></div>
+        </a>
+    <div class="post-card-content">
+        <a class="post-card-content-link" href="/blog/remote-phpunit-code-coverage/">
+            <header class="post-card-header">
+                    <span class="post-card-tags">PHP</span>
+                <h2 class="post-card-title">Remote PHPUnit code coverage in PHPStorm</h2>
+            </header>
+            <section class="post-card-excerpt">
+                <p>There is a great PHPUnit code coverage plugin for PHPStorm. After installing this plugin  your code coverage will be displayed directly in PHPStorm. Do you know how to use it remotely e.g.</p>
+            </section>
+        </a>
+        <footer class="post-card-meta">
+
+            <ul class="author-list">
+                <li class="author-list-item">
+
+                    <div class="author-name-tooltip">
+                        Sandro Keil
+                    </div>
+
+                        <a href="/blog/author/sandrokeil/" class="static-avatar"><img class="author-profile-image" src="/blog/content/images/2018/08/ipc.jpg" alt="Sandro Keil" /></a>
+                </li>
+            </ul>
+
+            <span class="reading-time">3 min read</span>
+
+        </footer>
+    </div>
+</article>
+
+                <article class="post-card post tag-docker">
+        <a class="post-card-image-link" href="/blog/configuring-nginx-to-speed-up-ghost-blog/">
+            <div class="post-card-image" style="background-image: url(/blog/content/images/2014/12/warp.jpg)"></div>
+        </a>
+    <div class="post-card-content">
+        <a class="post-card-content-link" href="/blog/configuring-nginx-to-speed-up-ghost-blog/">
+            <header class="post-card-header">
+                    <span class="post-card-tags">Docker</span>
+                <h2 class="post-card-title">Configuring nginx to speed up Ghost blog powered by Docker</h2>
+            </header>
+            <section class="post-card-excerpt">
+                <p>I was searching for some nginx configurations and found a blog post to speed up a Ghost blog. Unfortunately it doesn't work out of the box. However it was very interesting to set</p>
+            </section>
+        </a>
+        <footer class="post-card-meta">
+
+            <ul class="author-list">
+                <li class="author-list-item">
+
+                    <div class="author-name-tooltip">
+                        Sandro Keil
+                    </div>
+
+                        <a href="/blog/author/sandrokeil/" class="static-avatar"><img class="author-profile-image" src="/blog/content/images/2018/08/ipc.jpg" alt="Sandro Keil" /></a>
+                </li>
+            </ul>
+
+            <span class="reading-time">2 min read</span>
+
+        </footer>
+    </div>
+</article>
+
+        </div>
+    </div>
+</aside>
+
+<div class="floating-header">
+    <div class="floating-header-logo">
+        <a href="https://sandro-keil.de/blog">
+            <span>Blog by Sandro Keil</span>
+        </a>
+    </div>
+    <span class="floating-header-divider">&mdash;</span>
+    <div class="floating-header-title">Vagrant remote PHP &amp; CLI debugging with PHPStorm</div>
+    <div class="floating-header-share">
+        <div class="floating-header-share-label">Share this <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M7.5 15.5V4a1.5 1.5 0 1 1 3 0v4.5h2a1 1 0 0 1 1 1h2a1 1 0 0 1 1 1H18a1.5 1.5 0 0 1 1.5 1.5v3.099c0 .929-.13 1.854-.385 2.748L17.5 23.5h-9c-1.5-2-5.417-8.673-5.417-8.673a1.2 1.2 0 0 1 1.76-1.605L7.5 15.5zm6-6v2m-3-3.5v3.5m6-1v2"/>
+</svg>
+</div>
+        <a class="floating-header-share-tw" href="https://twitter.com/share?text=Vagrant%20remote%20PHP%20%26%20CLI%20debugging%20with%20PHPStorm&amp;url=https://sandro-keil.de/blog/vagrant-remote-php-cli-debugging/"
+            onclick="window.open(this.href, 'share-twitter', 'width=550,height=235');return false;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M30.063 7.313c-.813 1.125-1.75 2.125-2.875 2.938v.75c0 1.563-.188 3.125-.688 4.625a15.088 15.088 0 0 1-2.063 4.438c-.875 1.438-2 2.688-3.25 3.813a15.015 15.015 0 0 1-4.625 2.563c-1.813.688-3.75 1-5.75 1-3.25 0-6.188-.875-8.875-2.625.438.063.875.125 1.375.125 2.688 0 5.063-.875 7.188-2.5-1.25 0-2.375-.375-3.375-1.125s-1.688-1.688-2.063-2.875c.438.063.813.125 1.125.125.5 0 1-.063 1.5-.25-1.313-.25-2.438-.938-3.313-1.938a5.673 5.673 0 0 1-1.313-3.688v-.063c.813.438 1.688.688 2.625.688a5.228 5.228 0 0 1-1.875-2c-.5-.875-.688-1.813-.688-2.75 0-1.063.25-2.063.75-2.938 1.438 1.75 3.188 3.188 5.25 4.25s4.313 1.688 6.688 1.813a5.579 5.579 0 0 1 1.5-5.438c1.125-1.125 2.5-1.688 4.125-1.688s3.063.625 4.188 1.813a11.48 11.48 0 0 0 3.688-1.375c-.438 1.375-1.313 2.438-2.563 3.188 1.125-.125 2.188-.438 3.313-.875z"/></svg>
+        </a>
+        <a class="floating-header-share-fb" href="https://www.facebook.com/sharer/sharer.php?u=https://sandro-keil.de/blog/vagrant-remote-php-cli-debugging/"
+            onclick="window.open(this.href, 'share-facebook','width=580,height=296');return false;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M19 6h5V0h-5c-3.86 0-7 3.14-7 7v3H8v6h4v16h6V16h5l1-6h-6V7c0-.542.458-1 1-1z"/></svg>
+        </a>
+    </div>
+    <progress id="reading-progress" class="progress" value="0">
+        <div class="progress-container">
+            <span class="progress-bar"></span>
+        </div>
+    </progress>
+</div>
+
+
+
+
+        <footer class="site-footer outer">
+            <div class="site-footer-content inner">
+                <section class="copyright"><a href="https://sandro-keil.de/blog">Blog by Sandro Keil</a> &copy; 2024</section>
+                <nav class="site-footer-nav">
+                    <a href="https://sandro-keil.de/blog">Latest Posts</a>
+                    
+                    <a href="https://twitter.com/SandroKeil" target="_blank" rel="noopener">Twitter</a>
+                    <a href="https://sandro-keil.de/blog/2014/12/10/casperion-ghost-theme/" target="_blank" title="Casperion Ghost Theme" rel="noopener">Casperion Ghost Theme</a>
+                </nav>
+            </div>
+        </footer>
+
+    </div>
+
+
+    <script type="text/javascript" src="/blog/assets/js/jquery-3.2.1.min.js?v=30fcd7d37c"></script>
+
+
+    <script>
+
+// NOTE: Scroll performance is poor in Safari
+// - this appears to be due to the events firing much more slowly in Safari.
+//   Dropping the scroll event and using only a raf loop results in smoother
+//   scrolling but continuous processing even when not scrolling
+$(document).ready(function () {
+    // Start fitVids
+    var $postContent = $(".post-full-content");
+    $postContent.fitVids();
+    // End fitVids
+
+    var progressBar = document.querySelector('#reading-progress');
+    var header = document.querySelector('.floating-header');
+    var title = document.querySelector('.post-full-title');
+
+    var lastScrollY = window.scrollY;
+    var lastWindowHeight = window.innerHeight;
+    var lastDocumentHeight = $(document).height();
+    var ticking = false;
+
+    function onScroll() {
+        lastScrollY = window.scrollY;
+        requestTick();
+    }
+
+    function onResize() {
+        lastWindowHeight = window.innerHeight;
+        lastDocumentHeight = $(document).height();
+        requestTick();
+    }
+
+    function requestTick() {
+        if (!ticking) {
+            requestAnimationFrame(update);
+        }
+        ticking = true;
+    }
+
+    function update() {
+        var trigger = title.getBoundingClientRect().top + window.scrollY;
+        var triggerOffset = title.offsetHeight + 35;
+        var progressMax = lastDocumentHeight - lastWindowHeight;
+
+        // show/hide floating header
+        if (lastScrollY >= trigger + triggerOffset) {
+            header.classList.add('floating-active');
+        } else {
+            header.classList.remove('floating-active');
+        }
+
+        progressBar.setAttribute('max', progressMax);
+        progressBar.setAttribute('value', lastScrollY);
+
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', onScroll, {passive: true});
+    window.addEventListener('resize', onResize, false);
+
+    update();
+
+});
+</script>
+
+
+    <script>
+        (function ($) {
+            'use strict';
+
+            $( document ).ready( function () {
+                if ($("pre code")[0]) {
+                    $.getScript("/blog/assets/js/highlight.min.js?v=30fcd7d37c", function() {
+                        $("pre code").each(function (i, e) {
+                            hljs.highlightBlock(e)
+                        });
+                    });
+                }
+            } );
+        }( jQuery ));
+    </script>
+    
+
+    <div id="search-overlay" class="search-overlay block">
+        <div class="centered">
+            <div id='search-box' class="search-box">
+                <a href="#" id="close-btn" class="close-btn"><?xml version="1.0"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" fill="#ffffff" width="60px" height="60px">
+    <path d="M 7 4 C 6.744125 4 6.4879687 4.0974687 6.2929688 4.2929688 L 4.2929688 6.2929688 C 3.9019687 6.6839688 3.9019687 7.3170313 4.2929688 7.7070312 L 11.585938 15 L 4.2929688 22.292969 C 3.9019687 22.683969 3.9019687 23.317031 4.2929688 23.707031 L 6.2929688 25.707031 C 6.6839688 26.098031 7.3170313 26.098031 7.7070312 25.707031 L 15 18.414062 L 22.292969 25.707031 C 22.682969 26.098031 23.317031 26.098031 23.707031 25.707031 L 25.707031 23.707031 C 26.098031 23.316031 26.098031 22.682969 25.707031 22.292969 L 18.414062 15 L 25.707031 7.7070312 C 26.098031 7.3170312 26.098031 6.6829688 25.707031 6.2929688 L 23.707031 4.2929688 C 23.316031 3.9019687 22.682969 3.9019687 22.292969 4.2929688 L 15 11.585938 L 7.7070312 4.2929688 C 7.5115312 4.0974687 7.255875 4 7 4 z" fill="#ffffff"/>
+</svg>
+</a>
+                <form id="search-form" class="search-form" onsubmit="return false;">
+                    <input id="search-field" class="search-field" name="q" placeholder="Search" type="text"/>
+                </form>
+            </div>
+            <section class="search-results" id="results"></section>
+        </div>
+    </div>
+    <script type="text/javascript" src="/blog/assets/js/casperion.min.js?v=30fcd7d37c"></script>
+</body>
+</html>

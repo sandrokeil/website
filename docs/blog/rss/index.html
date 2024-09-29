@@ -1,0 +1,837 @@
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0" xmlns:media="http://search.yahoo.com/mrss/"><channel><title><![CDATA[Blog by Sandro Keil]]></title><description><![CDATA[Topics, advices and trends of web development]]></description><link>https://sandro-keil.de/blog/</link><image><url>https://sandro-keil.de/blog/favicon.png</url><title>Blog by Sandro Keil</title><link>https://sandro-keil.de/blog/</link></image><generator>Ghost 2.0</generator><lastBuildDate>Fri, 13 Sep 2024 10:10:13 GMT</lastBuildDate><atom:link href="https://sandro-keil.de/blog/rss/" rel="self" type="application/rss+xml"/><ttl>60</ttl><item><title><![CDATA[PHP Code Generator Redux]]></title><description><![CDATA[PHP code can be generated very well using an AST-based approach and a model like JSON schema or XML.  Learn more about PHP code generation.]]></description><link>https://sandro-keil.de/blog/php-code-generator-redux/</link><guid isPermaLink="false">602ac2c776025b000127caac</guid><category><![CDATA[PHP]]></category><dc:creator><![CDATA[Sandro Keil]]></dc:creator><pubDate>Tue, 16 Feb 2021 20:38:17 GMT</pubDate><media:content url="https://sandro-keil.de/blog/content/images/2021/02/hexagons-5276934_1920.png" medium="image"/><content:encoded><![CDATA[<img src="https://sandro-keil.de/blog/content/images/2021/02/hexagons-5276934_1920.png" alt="PHP Code Generator Redux"><p>PHP is an imperative programming language and can also be used as a template engine. This allows programming language constructs and static text to be combined via placeholders or marked areas. In addition, several variants for string concatenation are available. It is also possible to write the generated code to different files. With PHP version 7.0 an Abstract Syntax Tree (AST) is supported. An AST represents a syntactically correct sentence of a programming language as a tree structure. Therefore, PHP is very well suited as a programming language for a code generator.</p>
+<p>Model Driven Software Development (MDSD) deals with the automatic creation of software systems based on models. A model-to-text transformation generates code for a specific platform. In a model-to-model transformation, an existing model is enriched with information or an entirely new model can be created.</p>
+<p>In order to be able to generate executable software, a domain-specific abstraction with formal modeling is required. Code is automatically generated from models, for instance based on the Unified Modeling Language (UML), a JSON schema, XML etc. Models thus not only serve to document the application software, but also represent the actual code. As many artifacts of a software system as possible should be derived from the formal models. Modeling provides a simplified representation of complex interrelationships. The model is an abstract representation of a software system to be developed. This can be represented both graphically and textually.</p>
+<p>The following sections describes which Open-Source PHP libraries can be used to generate PHP code.</p>
+<h2 id="phpfilter">PHP Filter</h2>
+<p>The library <a href="https://github.com/open-code-modeling/php-filter" title="PHP Filter on GitHub">open-code-modeling/php-filter</a> provides common filter for PHP code generation. There are preconfigured filters to filter a name / label for class names, constants, properties, methods and namespaces. This library uses <em>laminas/laminas-filter</em> as a great foundation.</p>
+<h2 id="phpcodeast">PHP Code AST</h2>
+<p>It is a challenge to combine generated and handwritten code. The library <a href="https://github.com/open-code-modeling/php-code-ast" title="PHP Code AST on GitHub">open-code-modeling/php-code-ast</a> ships with an easy to use high level object-oriented API and supports also reverse engineering of your PHP code. During code generation, previously generated code is then analyzed using an AST-based approach. This makes it possible to distinguish between already generated and handwritten code. An approach such as protected areas can thus be dispensed with. Furthermore, the AST-based approach allows parts of the code to be specifically modified. This library uses <em>nikic/php-parser</em> as a great foundation.</p>
+<p>Take a look at a straightforward example of generating a class using the <code>ClassBuilder</code> high level API.</p>
+<pre><code class="language-php">use OpenCodeModeling\CodeAst\Builder;
+
+$parser = (new PhpParser\ParserFactory())-&gt;create(PhpParser\ParserFactory::ONLY_PHP7);
+$printer = new PhpParser\PrettyPrinter\Standard(['shortArraySyntax' =&gt; true]);
+
+$parser = (new PhpParser\ParserFactory())-&gt;create(PhpParser\ParserFactory::ONLY_PHP7);
+$printer = new PhpParser\PrettyPrinter\Standard(['shortArraySyntax' =&gt; true]);
+
+$code = ''; // or file_get_contents() of file
+$ast = $parser-&gt;parse($code);
+
+$classBuilder = Builder\ClassBuilder::fromScratch('TestClass', 'My\\Awesome\\Service');
+$classBuilder
+    -&gt;setFinal(true)
+    -&gt;setExtends('BaseClass')
+    -&gt;setNamespaceImports('Foo\\Bar')
+    -&gt;setImplements('\\Iterator', 'Bar')
+    -&gt;addConstant(
+        Builder\ClassConstBuilder::fromScratch('AWESOME', true)
+    )
+    -&gt;addMethod(
+        Builder\ClassMethodBuilder::fromScratch('sayHello')
+            -&gt;setBody(&quot;echo 'Hello World!';&quot;)
+            -&gt;setReturnType('void')
+    );
+
+$nodeTraverser = new PhpParser\NodeTraverser();
+
+$classBuilder-&gt;injectVisitors($nodeTraverser, $parser);
+
+print_r($printer-&gt;prettyPrintFile($nodeTraverser-&gt;traverse($ast)));
+</code></pre>
+<p>The code above will generate the following PHP code.</p>
+<pre><code class="language-php">&lt;?php
+
+declare (strict_types=1);
+namespace My\Awesome\Service;
+
+use Foo\Bar;
+final class TestClass extends BaseClass implements \Iterator, Bar
+{
+    public const AWESOME = true;
+    public function sayHello() : void
+    {
+        echo 'Hello World!';
+    }
+}
+</code></pre>
+<h2 id="jsonschematophp">JSON Schema to PHP</h2>
+<p>A JSON schema can be used as a model for code generation. For instance it can be used to create value objects. The library <a href="https://github.com/open-code-modeling/json-schema-to-php" title="JSON Schema to PHP on GitHub">open-code-modeling/json-schema-to-php</a> parses JSON schema files and provides an API to easily generate code from a JSON schema.</p>
+<p>Consider you have this JSON schema.</p>
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;required&quot;: [&quot;buildingId&quot;, &quot;name&quot;],
+    &quot;additionalProperties&quot;: false,
+    &quot;definitions&quot;: {
+        &quot;name&quot;: {
+            &quot;type&quot;: [&quot;string&quot;, &quot;null&quot;]
+        }
+    },
+    &quot;properties&quot;: {
+        &quot;buildingId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$&quot;
+        },
+        &quot;name&quot;: {
+            &quot;$ref&quot;: &quot;#/definitions/name&quot;
+        }
+    }
+}
+</code></pre>
+<p>You can create a <code>TypeSet</code> definition from the JSON schema above with the following code.</p>
+<pre><code class="language-php">&lt;?php
+use OpenCodeModeling\JsonSchemaToPhp\Type;
+use OpenCodeModeling\JsonSchemaToPhp\Type\TypeSet;
+use OpenCodeModeling\JsonSchemaToPhp\Type\ObjectType;
+use OpenCodeModeling\JsonSchemaToPhp\Type\StringType;
+
+$decodedJson = \json_decode($jsonSchema, true);
+
+$typeSet = Type::fromDefinition($decodedJson);
+
+/** @var ObjectType $type */
+$type = $typeSet-&gt;first();
+
+$type-&gt;additionalProperties(); // false
+
+$properties = $type-&gt;properties();
+
+/** @var TypeSet $buildingIdTypeSet */
+$buildingIdTypeSet = $properties['buildingId'];
+
+/** @var StringType $buildingId */
+$buildingId = $buildingIdTypeSet-&gt;first();
+
+$buildingId-&gt;name(); // buildingId
+$buildingId-&gt;type(); // string
+$buildingId-&gt;pattern(); // ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$
+$buildingId-&gt;isRequired(); // true
+$buildingId-&gt;isNullable(); // false
+// ...
+</code></pre>
+<h2 id="jsonschematophpast">JSON Schema to PHP AST</h2>
+<p>The library <a href="https://github.com/open-code-modeling/json-schema-to-php-ast" title="JSON Schema to PHP AST on GitHub">open-code-modeling/json-schema-to-php-ast</a> compiles a JSON schema to PHP classes / value objects via PHP AST. It provides factories to create <em>nikic/php-parser</em> node visitors or <em>open-code-modeling/php-code-ast</em> class builder objects from JSON schema. It supports the the JSON schema types <em>string</em>, <em>enum</em>, <em>integer</em>, <em>boolean</em>, <em>number</em> and <em>array</em>. The type <em>string</em> supports also the formats <em>date-time</em>, <em>ISO 8601</em>, <em>uuid</em> and <em>BCP 47</em>.</p>
+<h2 id="phpcodegenerator">PHP Code Generator</h2>
+<p>For sophisticated PHP code generation workflows there is the library <a href="https://github.com/open-code-modeling/php-code-generator" title="PHP Code Generator on GitHub">open-code-modeling/php-code-generator</a>. It provides the runtime environment for various components. These can be interconnected via a configuration. Thus, individual operational sequences can be provided and combined. By this modular structure the code generator can be individually extended and configured by developers.</p>
+<p>The code beneath shows a simple Hello World workflow.</p>
+<pre><code class="language-php">use OpenCodeModeling\CodeGenerator;
+
+$workflowContext = new CodeGenerator\Workflow\WorkflowContextMap();
+
+// initialize workflow with some data
+$workflowContext-&gt;put('hello', 'Hello ');
+
+$config = new CodeGenerator\Config\Workflow(
+    new CodeGenerator\Workflow\ComponentDescriptionWithSlot(
+        function (string $input) {
+            return $input . 'World';
+        },
+        'greetings', // output slot
+        'hello' // input slot
+    ),
+    new CodeGenerator\Workflow\ComponentDescriptionWithInputSlotOnly(
+        function (string $input) {
+            echo $input; // prints Hello World
+        },
+        'greetings',
+    )
+);
+
+$workflowEngine = new CodeGenerator\Workflow\WorkflowEngine();
+$workflowEngine-&gt;run($workflowContext, ...$config-&gt;componentDescriptions());
+</code></pre>
+<h2 id="conclusion">Conclusion</h2>
+<p>PHP Code generation using an AST-based approach allows already generated code to be matched with new code. Another advantage of this approach is that manually added code is not overwritten. Various detection mechanisms have been implemented for this purpose.</p>
+<p>This article shows that PHP code can be generated very well using an AST-based approach and a model in PHP. If you find it useful please spread the word and star the libraries on <a href="https://github.com/open-code-modeling" title="Open Code Modeling on GitHub">GitHub</a>.</p>
+]]></content:encoded></item><item><title><![CDATA[Dockerized desktop apps - Development with GIT, PhpStorm and Postman]]></title><description><![CDATA[In this Dockerized desktop apps part you will learn how to setup a development suite with PhpStorm, GIT and Postman.]]></description><link>https://sandro-keil.de/blog/dockerized-desktop-apps-phpstorm-git-postman-xdebug-remote-debugging/</link><guid isPermaLink="false">5b8cfa7a76025b000127ca68</guid><category><![CDATA[Docker]]></category><dc:creator><![CDATA[Sandro Keil]]></dc:creator><pubDate>Sun, 13 Jan 2019 17:02:26 GMT</pubDate><media:content url="https://sandro-keil.de/blog/content/images/2019/01/tools-1209300_1920.jpg" medium="image"/><content:encoded><![CDATA[<img src="https://sandro-keil.de/blog/content/images/2019/01/tools-1209300_1920.jpg" alt="Dockerized desktop apps - Development with GIT, PhpStorm and Postman"><p>This blog post shows how to setup a fully dockerized development suite with PhpStorm, GIT and Postman. But what is development without debugging? If all apps are dockerized you will need a workaround to be able to debug the application e.g. with PhpStorm and Xdebug. This is also considered. If you not familiar with Dockerized desktop apps, check out the <a href="https://sandro-keil.de/blog/dockerize-desktop-apps-with-nvidia-gpu-audio-support/" title="Dockerize desktop apps with NVIDIA GPU and audio support">Dockerized introduction</a>. You should create your own Docker images, but for testing my Docker images should work too. The bash scripts refer to a folder <em>data/x11docker</em> in your home directory where x11docker stores the container config. Please create it before.</p>
+<h2 id="setupgit">Setup GIT</h2>
+<p>To work properly with Dockerized GIT you need three things. A Docker container with GIT, the mounted source of course and your SSH credentials.</p>
+<h3 id="dockerimage">Docker Image</h3>
+<p>Let's start with the <a href="https://github.com/sandrokeil/docker-files/blob/master/arch-linux/git" title="GIT Dockerfile for Arch Linux">GIT Docker image</a>. The minimal packages are <em>git</em> and <em>openssh</em>.</p>
+<h3 id="startscript">Start script</h3>
+<p>One cool thing of <em>x11docker</em> is, that it does all the heavy lifting. Don't worry about file permissions, how to share the ssh socket or to mount directories. All my sources are stored under <em>data/sources</em>. This makes it easy to mount the root source directory. I set the working directory to the current directory where the git command is executed. With this is feels like native GIT usage.</p>
+<p>Create the following script named <em>git</em> and put it to a directory which is in your PATH variable e.g. <em>~/bin</em> and make it executable.</p>
+<pre><code>#!/usr/bin/env bash
+x11docker -q -t --sharessh --sharedir $HOME/data/sources --homedir=$HOME/data/x11docker/git --workdir $(pwd) -- sandrokeil/archlinux:git $@
+</code></pre>
+<p>Now you can use GIT as always and it works seamlessly. Ok, there are some small caveats. The start time is compared to native GIT long and you don't have bash completion. But I use PhpStorm mostly for VCS stuff.</p>
+<p>If some SSH keys are not found, you can mount the ssh folder with <code>--sharedir $HOME/.ssh:ro</code>.</p>
+<h2 id="setupphpstorm">Setup PhpStorm</h2>
+<p>To work efficiently with Dockerized PhpStorm you will need a Docker container with PhpStorm and the same packages like in the GIT dockerfile.</p>
+<h3 id="dockerimage">Docker Image</h3>
+<p>PhpStorm can be downloaded and extracted to <em>/opt</em>. I use this method in my <a href="https://github.com/sandrokeil/docker-files/blob/master/arch-linux/phpstorm" title="Arch Linux PhpStorm Dockerfile">PhpStorm Docker image</a>. You will need the packages <em>git</em>, <em>openssh</em>, <em>vim</em>, <em>gnome-keyring</em> and <em>libsecret</em> to work properly. PhpStorm stores connection credentials in the Linux keyring.</p>
+<h3 id="startscript">Start script</h3>
+<p>The PhpStorm script has some more options like git, because we need a clipboard for copy &amp; paste and hostdbus for credentials. I use also <em>hostdisplay</em> but you can also try <em>xpra</em>. To debug applications with PhpStorm you must add PhpStorm to the network of the application which should be debugged. I use a trick in the PhpStorm startup script to add the <em>phpstorm</em> container to every <em>default</em> network.</p>
+<pre><code>#!/usr/bin/env bash
+
+# add all networks which ends with &quot;_default&quot; to the PhpStorm Docker container
+docker network ls | grep &quot;_default&quot; | awk '{print $2}' | while read line
+do
+  $(sleep 5 &amp;&amp; docker network connect $line phpstorm) &amp;
+done
+
+x11docker --hostdbus --name phpstorm -q --sharessh --sharedir $HOME/data/sources --homedir=$HOME/data/x11docker/phpstorm --hostdisplay --clipboard -- sandrokeil/archlinux:phpstorm
+</code></pre>
+<p>You have to set the xDebug <em>XDEBUG_CONFIG</em> option to <code>remote_host=phpstorm</code> and ensure that <em>xdebug.remote_connect_back</em> is disabled. Read more about <a href="https://sandro-keil.de/blog/docker-php-xdebug-cli-debugging/" title="Docker PHP Xdebug CLI debugging">Docker PHP debugging</a>.</p>
+<h2 id="setuppostman">Setup Postman</h2>
+<p>Postman is a popular tool for API development. It has many features like test, debug and documentation of your APIs.</p>
+<h3 id="dockerimage">Docker Image</h3>
+<p>Simply install Postman for your distro. That's it.</p>
+<h3 id="startscript">Start script</h3>
+<p>To interact with other Docker containers via a local domain you have to add the <code>add-host</code> option with the IP of your Docker network. In this example it's <em>172.17.0.1</em> but may be vary on your host. You can also share your <em>Downloads</em> folder to import / export Postman collections. Debugging your APIs with xDebug works like a charm.</p>
+<pre><code>#!/usr/bin/env bash
+x11docker --name=postman -q --xpra --homedir=$HOME/data/x11docker/postman --clipboard -- --cpus=&quot;2&quot; --memory=&quot;2G&quot; --add-host=awesome.local:172.17.0.1 sandrokeil/archlinux:postman
+</code></pre>
+<h2 id="chromium">Chromium</h2>
+<p>I use a dedicated Chromium for development with installed development plugins. Some plugins have access to all data of the webpage or can even manipulate the website data. To browse a development website which is served by a Docker container via a local domain you have to add the <code>add-host</code> option with the IP of your Docker network.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>This blog post has shown how to setup a complete development environment with Docker. It's not very complicated but you have to figure out a few things. It's almost a native feeling and has so many benefits, such as: Run different versions of same application. The best thing is, that you not bloat your host system with other software.</p>
+]]></content:encoded></item><item><title><![CDATA[YubiKey full disk encryption with UEFI secure boot for everyone]]></title><description><![CDATA[This tutorial is a step-by-step guide to create a full disk encryption with YubiKey, encrypted boot partition and secure boot with UEFI.]]></description><link>https://sandro-keil.de/blog/yubikey-full-disk-encryption-uefi-secure-boot-for-everyone/</link><guid isPermaLink="false">5b8ee17c76025b000127ca6c</guid><category><![CDATA[Security]]></category><dc:creator><![CDATA[Sandro Keil]]></dc:creator><pubDate>Wed, 12 Sep 2018 20:07:16 GMT</pubDate><media:content url="https://sandro-keil.de/blog/content/images/2018/09/cyber-security-3400657_1920.jpg" medium="image"/><content:encoded><![CDATA[<img src="https://sandro-keil.de/blog/content/images/2018/09/cyber-security-3400657_1920.jpg" alt="YubiKey full disk encryption with UEFI secure boot for everyone"><p>I've created a full disk encryption setup guide. If you complete this guide, you will have an encrypted root and home partition with YubiKey two factor authentication, an encrypted boot partition and UFEI secure boot enabled. Sounds complicated? No, it isn't!</p>
+<p>It took me several days to figure out how to set up a fully encrypted machine with 2FA. <a href="https://sandrokeil.github.io/yubikey-full-disk-encryption-secure-boot-uefi/intro.html#1" title="YubiKey Full Disk Encryption Guide">This guide should help</a>  to get it done in some hours (hopefully). There exists a plenty bunch of tutorials. but none contains a step-by-step guide to get the following things done.</p>
+<ul>
+<li>YubiKey encrypted root (<code>/</code>) and home (<code>/home</code>) folder on separated partitions</li>
+<li>Encrypted boot (<code>/boot</code>) folder on separated partition</li>
+<li>UEFI Secure boot with self signed boot loader</li>
+<li>YubiKey authentication for user login and <code>sudo</code> commands</li>
+<li>Hooks to auto sign the kernel after an upgrade</li>
+</ul>
+<p>You should be familiar with Linux and you should be able to edit files with <em>vi/vim</em>. You need an USB stick for the Linux Live environment and a second computer would be useful for look ups and to read this guide while preparing your fully encrypted Linux. And of course you will need an <a href="https://www.yubico.com/products/yubikey-hardware/" title="YubiKey Hardware">YubiKey</a>.</p>
+<pre><code>Number  Start (sector)    End (sector)  Size       Code  Name
+   1            2048            4095   1024.0 KiB  EF02  BIOS boot partition
+   2            4096         1232895   600.0 MiB   EF00  EFI System
+   3         1232896         2461695   600.0 MiB   8300  Linux filesystem
+   4         2461696      2000409230   952.7 GiB   8E00  Linux LVM
+</code></pre>
+<p>The disk partitions will look similar like above and the GRUB boot loader will ask you to unlock the boot partition with a password. After that, you will be asked to unlock the root and home partition with a password and your YubiKey device (2FA). The BIOS will be also protected by a password, otherwise UEFI secure boot can be disabled. But even if this is the case, your root and home partition will still be encrypted. This is maximum security.</p>
+<p>At the moment there exists only a guide for Arch Linux, but it should be similar for other Linux distributions. If you want to write a guide for Debian/Ubuntu or any other Linux, don't hesitate to open an issue on <a href="https://github.com/sandrokeil/yubikey-full-disk-encryption-secure-boot-uefi" title="YubiKey Full Disk Encryption Repository">GitHub</a> or bring your pull request.</p>
+<p>If you like this guide, please spread the word, so everyone can use it and don't forget to star this project on GitHub.</p>
+]]></content:encoded></item><item><title><![CDATA[Ghost theme Casperion 2.0]]></title><description><![CDATA[The free Ghost theme Casperion 2.0 supports Ghost 2.x now. It provides full text search and highlights code snippets.]]></description><link>https://sandro-keil.de/blog/ghost-theme-casperion-2-0/</link><guid isPermaLink="false">5b859cb46d9ed700018f1155</guid><category><![CDATA[Ghost]]></category><dc:creator><![CDATA[Sandro Keil]]></dc:creator><pubDate>Tue, 28 Aug 2018 20:21:32 GMT</pubDate><media:content url="https://sandro-keil.de/blog/content/images/2018/08/bokeh-1183355_1280.jpg" medium="image"/><content:encoded><![CDATA[<img src="https://sandro-keil.de/blog/content/images/2018/08/bokeh-1183355_1280.jpg" alt="Ghost theme Casperion 2.0"><p>It's quite a while since the <a href="https://sandro-keil.de/blog/casperion-ghost-theme/">Ghost theme Casperion</a> was released. Things have changed and it was time to bring it up to date with latest Ghost 2.0. This time, I'd like to make minimal changes to simplify updates, as many features are planned for the Ghost and Ghost theme Casper. I've removed Google Analytics and Disqus and all resources are delivered from the theme. No external resources are used anymore. Thanks to the DSGVO (GDPR). Here are the features.</p><h3 id="full-ghost-2-0-support">Full Ghost 2.0 support</h3><p>The free Casperion Ghost theme supports latest Ghost 2.x version.</p><h3 id="ghosthunter">GhostHunter</h3><p><a href="https://github.com/jamalneufeld/ghostHunter">GhostHunter</a> provides Casperion full text searching right in the blog without having to resort to any third-party solutions, by utilizing the Ghost API. The blog search uses an overlay and displays the blog post description, so it looks really nice.</p><h3 id="highlight-js">Highlight.JS</h3><p><a href="http://highlightjs.org/">Highlight.js</a> highlights syntax in code examples on Casperion blog posts. It's very easy to use because it works automatically. It finds blocks of code, detects a language and highlights it. Highlight.js is only loaded if a code block was detected in blog post.</p><p>You can download <a href="https://github.com/sandrokeil/ghost-theme-casperion">Casperion here</a>. If you like it, please star this project on GitHub.</p>]]></content:encoded></item><item><title><![CDATA[Dockerize desktop apps with NVIDIA GPU and audio support]]></title><description><![CDATA[Are you ready for your next Docker experience? All of my daily used applications are dockerized like Chromium, GIT, VLC and Thunderbird.]]></description><link>https://sandro-keil.de/blog/dockerize-desktop-apps-with-nvidia-gpu-audio-support/</link><guid isPermaLink="false">5b801214d8f3180001dd672d</guid><category><![CDATA[Docker]]></category><dc:creator><![CDATA[Sandro Keil]]></dc:creator><pubDate>Mon, 20 Aug 2018 19:28:20 GMT</pubDate><media:content url="https://sandro-keil.de/blog/content/images/2018/08/dockerize-desktop-apps.jpg" medium="image"/><content:encoded><![CDATA[<img src="https://sandro-keil.de/blog/content/images/2018/08/dockerize-desktop-apps.jpg" alt="Dockerize desktop apps with NVIDIA GPU and audio support"><p>It's 2018 and it's time to Dockerize all desktop applications, isn't it? Don't pollute your system with package dependencies which makes system updates harder and adds possible attack surface and vulnerabilities to your system. Run every application inside Docker, even GUIs and full desktops with Wayland or X11. You think it's not possible, then read this post.</p>
+<h2 id="x11docker">x11docker</h2>
+<p>Martin Viereck has created an awesome Docker project called <a href="https://github.com/mviereck/x11docker" title="Run GUI applications and desktops in docker. Focus on security.">x11docker - Run GUI applications in docker</a>. This bash script is a wrapper around the Docker arguments to run GUI applications. Even more, it simplifies to start and manage GUI applications. It comes with much security in place. The goal of x11docker is to provide isolation from host as good as possible and works also on Windows. Hardware accelerated OpenGL rendering is supported, even for closed NVIDIA drivers and CUDA. Clipboard and sound can be activated. So much WOW!</p>
+<p>See also <a href="https://sandro-keil.de/blog/2017/01/23/docker-daemon-tuning-and-json-file-configuration/" title="Docker Daemon tuning and JSON file configuration">how to install and tune Docker</a>.</p>
+<h3 id="dependencies">Dependencies</h3>
+<p>The following packages are for Arch Linux but should be similar for other operation systems. I can't use the x11docker wayland mode because of the NVIDIA proprietary driver, so I have to install some additional X11 packages. Please refer the x11docker documentation, different renderer and terminals are supported.</p>
+<pre><code>xpra xorg-xinit xorg-xprop xorg-xsetroot xdotool xorg-server xorg-server-xephyr xorg-xhost xorg-server-xvfb xorg-server-xwayland weston xorg-xrandr xorg-xauth xorg-xdpyinfo gnome-terminal
+</code></pre>
+<h2 id="enablenvidiagpu">Enable NVIDIA GPU</h2>
+<p>To leverage a NVIDIA GPU in the container there exists a <a href="https://github.com/NVIDIA/nvidia-docker" title="Build and run Docker containers leveraging NVIDIA GPUs">NVIDIA Docker container runtime</a>. Please follow the install steps in their docs. As described in the x11docker docs, you have to ensure that the same version of closed NVIDIA drivers are used at host and in the Docker container. You will get also CUDA support. That's really handy. The NVIDIA runtime is actived via the Docker argument <code>--runtime nvidia</code>.</p>
+<h2 id="dockerimagesfordesktopapps">Docker images for desktop apps</h2>
+<p>Jess Frazelle has <a href="https://github.com/jessfraz/dockerfiles" title="Various Dockerfiles I use on the desktop and on servers">various desktop Dockerfiles</a> but you should <a href="https://github.com/sandrokeil/docker-files/tree/master/arch-linux" title="Arch Linux Dockerized Desktop Apps">build your own</a> like I have done. It's not complicated and you can optimize it for your needs and you can ensure same package version on host and Docker container. This is useful for GPU acceleration and audio.</p>
+<p>Let's take a look how I start VLC with GPU acceleration and audio. Remember I've build my own <a href="https://github.com/sandrokeil/docker-files/blob/master/arch-linux/vlc-nvidia">VLC NVIDIA Docker image</a>. Use the following simple bash script which starts VLC via x11docker. Some additional Docker options are used to limit the resources to 2 CPU and 4 GB RAM. The <code>$@</code> at the end means that all arguments which are passed to the bash script are passed to the Docker container. You will see in the next chapter why it's useful. Create a bash script called <code>vlc</code> and ensure that it is executable and in your environment path.</p>
+<blockquote>
+<p>You may want to replace the Docker image with your own.</p>
+</blockquote>
+<pre><code>#!/usr/bin/env bash
+x11docker --stderr --stdout --hostdisplay --sharedir=$HOME/Videos --gpu --pulseaudio -- --cpus=&quot;2&quot; --memory=&quot;4G&quot; --runtime=nvidia sandrokeil/archlinux-nvidia:vlc $@
+</code></pre>
+<h2 id="desktopiconandfileassociation">Desktop icon and file association</h2>
+<p>Do you know that you can create a desktop icon for your Docker application and associate it for specific file types? I use a simple bash script for each of my desktop Docker apps which contains the necessary arguments. The advantage is that you can change it without recreating the desktop item. And you will do it at some time. This makes it also very easy to create a desktop icon.</p>
+<p>To associate your Docker app with a file type you will need a desktop icon. This is done with the command <code>gnome-desktop-item-edit --create-new ~/.local/share/applications</code> if you use GNOME desktop. If this command is not available, please install the package <code>gnome-panel</code>. Write <code>vlc</code> as the command you want to execute. This points to the bash script above.</p>
+<p>Now you can find out the specific file type with <code>xdg-mime query filetype [your file]</code> and link it to the desktop entry via <code>xdg-mime default [desktop entry name].desktop [mime type name]</code>. For instance, to automatically start VLC for mp4 files you would run <code>xdg-mime default vlc.desktop video/mp4</code>.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>All of my daily used applications like Thunderbird, PhpStorm, AWS CLI, GIT (yes, even GIT), Rambox, Postman and Chromium are dockerized and what should I say. It works quite well. Maybe it's a bit less comfortable depending on the setup. For instance if you share only some folders then you have to copy files around but this can be easily changed. I prefer minimal sharing of host files and share only folders that are needed for the current application.</p>
+<p><a href="https://github.com/mviereck/x11docker/" title="Run GUI applications and desktops in docker">x11docker</a> makes dockerized desktop apps very easy and it works on Windows too. No more excuses. Start your dockerized desktop app journey today.</p>
+]]></content:encoded></item><item><title><![CDATA[Let nginx start if upstream host is unavailable or down]]></title><description><![CDATA[Learn how nginx can be started even if a upstream host is not available. This is done by a small but subtle difference in the nginx upstream host definition.]]></description><link>https://sandro-keil.de/blog/let-nginx-start-if-upstream-host-is-unavailable-or-down/</link><guid isPermaLink="false">5b801214d8f3180001dd6720</guid><category><![CDATA[Docker]]></category><dc:creator><![CDATA[Sandro Keil]]></dc:creator><pubDate>Mon, 24 Jul 2017 16:55:59 GMT</pubDate><media:content url="https://sandro-keil.de/blog/content/images/2017/07/gateway.jpg" medium="image"/><content:encoded><![CDATA[<img src="https://sandro-keil.de/blog/content/images/2017/07/gateway.jpg" alt="Let nginx start if upstream host is unavailable or down"><p>If you use <code>proxy_pass</code> or <code>fastcgi_pass</code> definitions in your nginx server config, then nginx checks the hostname during the startup phase. If one of these servers is not available, nginx will not start. This is not useful. If you use nginx as a gateway, why should all services unreachable if only one service is down due the nginx ramp time? This blog post shows a trick how to avoid such behaviour and exposes also the internal Docker DNS IP for the Docker DNS resolver.</p>
+<h2 id="usenginxvariables">Use nginx variables</h2>
+<p>The trick is to use variables for the upstream domain name. Maybe you even don't need an upstream definition like this <a href="https://github.com/prooph/micro-do/commit/72ce8abe732785b4063cec610aeaf5e0b26fed00" title="Remove upstream definition from nginx site config">GIT diff shows</a>. Let's take a look at a common PHP nginx location example.</p>
+<pre><code>location ^~ /api/ {
+    # other config entries omitted for breavity
+
+    # nginx start will fail if host is not reachable
+    fastcgi_pass    api.awesome.com:9000; 
+    fastcgi_index   index.php;
+}
+</code></pre>
+<p>The next example replaces the <code>fastcgi_pass</code> with a variable, so nginx will not check if the host is reachable on startup. This results in a <code>502 Bad Gateway</code> message if the host is unavailable and that's fine. As soon as the service is back, everything works as expected.</p>
+<pre><code>server {
+    location ^~ /api/ {
+        # other config entries omitted for breavity
+    
+        set $upstream api.awesome.com:9000;
+
+        # nginx will now start if host is not reachable
+        fastcgi_pass    $upstream; 
+        fastcgi_index   index.php;
+    }
+}
+</code></pre>
+<h2 id="internaldockerdnsresolverip">Internal Docker DNS resolver IP</h2>
+<p>If the definition above is used, a resovler definition is needed. Because we use Docker, we have to use the internal Docker DNS resolver IP which is <code>127.0.0.11</code>. By the way, the internal AWS DNS resolver IP is your AWS VPC network range <em>plus two</em>. To further remove the downtime, reduce the resolve cache time to 30 seconds instead of the default 5 minutes. Let's at the nginx resolver definition to the config above.</p>
+<pre><code>server {
+    # this is the internal Docker DNS, cache only for 30s
+    resolver 127.0.0.11 valid=30s;
+    
+    location ^~ /api/ {
+        # other config entries omitted for breavity
+    
+        set $upstream api.awesome.com:9000;
+ 
+        # nginx will now start if host is not reachable
+        fastcgi_pass    $upstream; 
+        fastcgi_index   index.php;
+    }
+}
+</code></pre>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this blog post you have seen a small but subtle difference in the nginx upstream host definition. You will only notice the change, if something is broken in your infrastructure and then it's to late. With this nginx config you will deliver more robust infrastructure. If you have some other handy tips, don't hesitate to leave a comment.</p>
+]]></content:encoded></item><item><title><![CDATA[Asynchronous prooph messages via Amazon AWS SQS]]></title><description><![CDATA[Learn how to use Amazon AWS Simple Queue Service (SQS) for asynchronous prooph messages for your CQRS & Event Sourcing application with prooph async switch.]]></description><link>https://sandro-keil.de/blog/asynchronous-prooph-messages-via-amazon-aws-sqs/</link><guid isPermaLink="false">5b801214d8f3180001dd672a</guid><category><![CDATA[PHP]]></category><category><![CDATA[prooph]]></category><dc:creator><![CDATA[Sandro Keil]]></dc:creator><pubDate>Sun, 18 Jun 2017 19:09:11 GMT</pubDate><media:content url="https://sandro-keil.de/blog/content/images/2017/06/books-clock.jpg" medium="image"/><content:encoded><![CDATA[<img src="https://sandro-keil.de/blog/content/images/2017/06/books-clock.jpg" alt="Asynchronous prooph messages via Amazon AWS SQS"><p>Do you know that you can easily switch to async prooph messages for your commands, events and even queries? This blog post shows how to use it to produce asynchronous messages via Amazon AWS Simple Queue Service (SQS). If you not familiar with the <a href="http://getprooph.org/" title="The CQRS and Event Sourcing components for PHP">prooph components</a> I will give you a short explanation. The prooph components are <a href="https://sandro-keil.de/blog/2015/05/17/domain-driven-design-hexagonal-architecture-event-sourcing-oh-my/" title="Hexagonal Architecture, Domain Driven Design, Event Sourcing, Oh, My!">CQRS and Event Sourcing</a> packages for PHP. They are enterprise ready, works with every PHP application and has support for the most famous PHP web frameworks (Zend, Symfony, Laravel) and of course, plays well with microservices, too! I recommend to try it out.</p>
+<h2 id="enableproophasyncswitch">Enable prooph async switch</h2>
+<p>To enable the prooph async switcher, add the following config definition to your prooph config file for your specific service bus. This example illustrates it for the event bus. Don't forget to register a factory in your favorite dependency injection container.</p>
+<pre><code>&lt;?php
+
+declare(strict_types=1);
+
+// prooph array config file
+return [
+    'prooph' =&gt; [
+        'service_bus' =&gt; [
+            'event_bus' =&gt; [
+                'plugins' =&gt; [
+                    \Prooph\ServiceBus\Plugin\InvokeStrategy\OnEventStrategy::class,
+                ],
+                'router' =&gt; [
+                    // only one line, that's it
+                    'async_switch' =&gt; Acme\SqsMessageProducer::class,
+                    'routes' =&gt; [/**/],
+                ],
+            ],
+        ],
+    ],
+];
+</code></pre>
+<h2 id="markproophmessageclassasasync">Mark prooph message class as async</h2>
+<p>The following example illustrates how to define an asynchronous event. Implement the interface <code>Prooph\ServiceBus\Async\AsyncMessage</code> to your event class. Is that easy, isn't it? You have nothing to do anything else. prooph service bus handles all the stuff for you. If you interested on some internals, read on or jump to the next headline. If a message occurs, the prooph <code>AsyncSwitchMessageRouter</code> enriches the message metadata with <code>handled-async</code>. If this field is not true, the message is send to the async message producer. If it is true, the message is sent to the decorated router and handled by the service bus like normally. Now let's go to the async message producer implementation.</p>
+<h2 id="amazonawssqsasyncmessageproducer">Amazon AWS SQS async message producer</h2>
+<p>This is an example for the Amazon AWS Simple Queue Service (SQS). Be sure you have created an Amazon SQS queue and have the correct access rights. Then you should see the messages in the queue. Ok, the following code contains no fancy stuff and you are free to change it to your needs. But it should help to get started. The official Amazon AWS PHP library is used. Be sure you have installed it.</p>
+<pre><code>&lt;?php
+
+declare(strict_types=1);
+
+namespace Acme;
+
+use Aws\Sqs\SqsClient;
+use Prooph\Common\Messaging\Message;
+use Prooph\Common\Messaging\MessageConverter;
+use Prooph\ServiceBus\Async\MessageProducer;
+use Prooph\ServiceBus\Exception\RuntimeException;
+use React\Promise\Deferred;
+
+class SqsMessageProducer implements MessageProducer
+{
+    /**
+     * AWS SQS client
+     *
+     * @var SqsClient
+     */
+    private $sqsClient;
+
+    /**
+     * Queue URL
+     *
+     * @var string
+     */
+    private $queueUrl;
+
+    /**
+     * Message converter
+     *
+     * @var MessageConverter
+     */
+    private $messageConverter;
+
+    public function __construct(MessageConverter $messageConverter, SqsClient $sqsClient, string $queueUrl)
+    {
+        $this-&gt;sqsClient = $sqsClient;
+        $this-&gt;messageConverter = $messageConverter;
+        $this-&gt;queueUrl = $queueUrl;
+    }
+
+    public function __invoke(Message $message, Deferred $deferred = null)
+    {
+        if (null !== $deferred) {
+            throw new \RuntimeException('The SqsMessageProducer can not handle deferred messages.');
+        }
+
+        $promise = $this-&gt;sqsClient-&gt;sendMessageAsync(array(
+            'QueueUrl'    =&gt; $this-&gt;queueUrl,
+            'MessageBody' =&gt; json_encode($this-&gt;messageConverter-&gt;convertToArray($message)),
+        ));
+
+        $promise-&gt;wait();
+    }
+}
+</code></pre>
+<p>Now the event messages are sent to the Amazon SQS queue, but where is the message consumer, right? You can use <a href="https://cloudonaut.io/integrate-sqs-and-lambda-serverless-architecture-for-asynchronous-workloads/" title="Integrate SQS and Lambda">Amazon AWS Lambda to read the messages from the queue</a> and send them to a message box HTTP endpoint, which is responsible for the incoming messages. You can use the <a href="https://github.com/prooph/psr7-middleware" title="Consume prooph messages (commands, queries and events) with a PSR-7 middleware">prooph PSR-7 middleware library</a> or write your own implementation. The AWS Lambda consumer function is triggered via an <code>AWS::Events::Rule</code> with a rate of one minute. It's not realtime but it works like a charm.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>With a few lines of code, you can activate asynchronous prooph messages. This is really awesome. Don't miss to checkout the <a href="http://getprooph.org/" title="everything to get you started with CQRS and Event Sourcing">prooph website</a>, to find out what you can do anything else with the <a href="https://github.com/prooph" title="prooph PHP packages on GitHub">prooph components</a>.</p>
+<p>Which asynchronous message producer do you use?</p>
+]]></content:encoded></item><item><title><![CDATA[OpenResty (nginx) with auto generated SSL certificate from Let’s Encrypt]]></title><description><![CDATA[nginx with Lua is very powerful. This blog post shows how to use an OpenResty Docker container to auto (re)generate SSL certificates from Let’s Encrypt.]]></description><link>https://sandro-keil.de/blog/openresty-nginx-with-auto-generated-ssl-certificate-from-lets-encrypt/</link><guid isPermaLink="false">5b801214d8f3180001dd671f</guid><category><![CDATA[Docker]]></category><dc:creator><![CDATA[Sandro Keil]]></dc:creator><pubDate>Sun, 26 Feb 2017 17:30:05 GMT</pubDate><media:content url="https://sandro-keil.de/blog/content/images/2017/02/security-265130.jpg" medium="image"/><content:encoded><![CDATA[<img src="https://sandro-keil.de/blog/content/images/2017/02/security-265130.jpg" alt="OpenResty (nginx) with auto generated SSL certificate from Let’s Encrypt"><p>I started with a startssl.com free SSL certificate to use encrypted connections for my website. This works fine, but I have to update the SSL certificate every year manually. Let’s Encrypt offers auto (re)generate SSL certificates and there exists different implementations. The only option for me was Docker of course, but not with an extra Docker container. nginx has support for Lua, so the <a href="https://github.com/GUI/lua-resty-auto-ssl" title="On the fly (and free) SSL registration and renewal">lua-resty-auto-ssl</a> should be a perfect match. Unfortunatly, I was not able to get it running with nginx. If someone want to try it, you find my <a href="https://gist.github.com/sandrokeil/b44e4e67f7dea02e72ea21f0b9f813e3" title="nginx with lua-resty-auto-ssl">nginx Dockerfile here</a>. OpenResty is a nginx drop-in replacement and has Lua built-in. That's pretty nifty. This blog post shows how to use OpenResty with the <em>lua-resty-auto-ssl</em> plugin to automatically and transparently issues SSL certificates from Let's Encrypt (a free certificate authority) as requests are received.</p>
+<h2 id="openrestyluarestyautossldockerimage">OpenResty lua-resty-auto-ssl Docker image</h2>
+<p>The <code>openresty/openresty:alpine-fat</code> Docker image is used as base image, because <em>LuaRocks</em> is already included and this makes the installation of <em>lua-resty-auto-ssl</em> plugin very easy. There are some additional libraries needed, to work properly. My <a href="https://hub.docker.com/r/sandrokeil/open-resty/" title="OpenResty with lua-resty-auto-ssl Docker image">OpenResty Dockerfile</a> looks like this.</p>
+<pre><code>FROM openresty/openresty:alpine-fat
+
+RUN apk add --no-cache --virtual .run-deps \
+    bash \
+    curl \
+    diffutils \
+    grep \
+    sed \
+    openssl \
+    &amp;&amp; mkdir -p /etc/resty-auto-ssl \
+    &amp;&amp; addgroup -S nginx \
+    &amp;&amp; adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G nginx nginx \
+    &amp;&amp; chown nginx /etc/resty-auto-ssl
+
+RUN apk add --no-cache --virtual .build-deps \
+        gcc \
+        libc-dev \
+        make \
+        openssl-dev \
+        pcre-dev \
+        zlib-dev \
+        linux-headers \
+        gnupg \
+        libxslt-dev \
+        gd-dev \
+        geoip-dev \
+        perl-dev \
+        tar \
+        unzip \
+        zip \
+        unzip \
+        g++ \
+        cmake \
+        lua \
+        lua-dev \
+        make \
+        autoconf \
+        automake \
+    &amp;&amp; /usr/local/openresty/luajit/bin/luarocks install lua-resty-auto-ssl \
+    &amp;&amp; apk del .build-deps \
+    &amp;&amp; rm -rf /usr/local/openresty/nginx/conf/* \
+    &amp;&amp; mkdir -p /var/cache/nginx
+
+# use self signed ssl certifacte to start nginx
+COPY ./ssl /etc/resty-auto-ssl
+</code></pre>
+<h2 id="nginxconfig">nginx config</h2>
+<p>The needed Docker image is ready so we have to configure nginx. I will only show important parts of the nginx config to use the <em>lua-resty-auto-ssl</em> plugin. Take also a look at the <em>lua-resty-auto-ssl</em> documentation to see which options are available. For instance, to test your config you can use the staging system of Let’s Encrypt to not run in rate limits.</p>
+<pre><code># Run as a less privileged user for security reasons.
+user nginx;
+
+error_log  /usr/local/openresty/nginx/logs/error.log warn;
+
+# ...
+
+http {
+  # The &quot;auto_ssl&quot; shared dict should be defined with enough storage space to
+  # hold your certificate data. 1MB of storage holds certificates for
+  # approximately 100 separate domains.
+  lua_shared_dict auto_ssl 1m;
+
+  # Initial setup tasks.
+  init_by_lua_block {
+    auto_ssl = (require &quot;resty.auto-ssl&quot;).new()
+
+    -- Define a function to determine which SNI domains to automatically handle
+    -- and register new certificates for. Defaults to not allowing any domains,
+    -- so this must be configured.
+    auto_ssl:set(&quot;allow_domain&quot;, function(domain)
+      return ngx.re.match(domain, &quot;(sandro-keil.de)$&quot;, &quot;ijo&quot;)
+    end)
+
+    auto_ssl:set(&quot;dir&quot;, &quot;/etc/resty-auto-ssl&quot;)
+
+    auto_ssl:init()
+  }
+
+  init_worker_by_lua_block {
+    auto_ssl:init_worker()
+  }
+
+  access_log /usr/local/openresty/nginx/logs/access.log main;
+
+  # ...
+}
+</code></pre>
+<h2 id="nginxserverdefinition">nginx server definition</h2>
+<p>The last thing is to configure your nginx server definitions to auto (re)generate the SSL certificate and allow Let’s Encrypt to access your server. This is also quite easy, but you should not expose the port <code>8999</code>. Put <code>ssl_certificate_by_lua_block</code> to your HTTPS server definition like shown below.</p>
+<pre><code>server {
+    listen 443 ssl http2;
+
+    # Dynamic handler for issuing or returning certs for SNI domains.
+    ssl_certificate_by_lua_block {
+      auto_ssl:ssl_certificate()
+    }
+}
+</code></pre>
+<p>The endpoint which is used for performing domain verification with Let's Encrypt is put to your HTTP server definition and an extra server definition for handling certificate tasks is needed.</p>
+<pre><code>server {
+    listen 80;
+    server_name www.sandro-keil.de www.sandrokeil.de sandro-keil.de sandrokeil.de;
+
+    # Endpoint used for performing domain verification with Let's Encrypt.
+    location /.well-known/acme-challenge/ {
+        content_by_lua_block {
+            auto_ssl:challenge_server()
+        }
+    }
+
+    location / {
+        return 301 https://sandro-keil.de$request_uri;
+    }
+}
+
+# Internal server running on port 8999 for handling certificate tasks.
+server {
+    listen 8999;
+    location / {
+        content_by_lua_block {
+            auto_ssl:hook_server()
+        }
+    }
+}
+</code></pre>
+<h2 id="conclusion">Conclusion</h2>
+<p>nginx with Lua is very powerful and OpenResty provides an easy way to use it. There are much more interesting OpenResty plugins based on lua. The SSL certificate is now auto regenerated and saves me some work every year. I hope this blog post helps you too. I'm happy to see your comment.</p>
+<p>If the IP of the server has changed, you can flush the DNS cache via <a href="https://developers.google.com/speed/public-dns/cache">Google Developers DNS flush</a>, because Let’s Encrypt uses Google's DNS. This was pretty handy for me. I've switched from an 1 vCore / 1 GB RAM to an 1 vCore / 512 MB RAM server.</p>
+]]></content:encoded></item><item><title><![CDATA[Docker Daemon tuning and JSON file configuration]]></title><description><![CDATA[Optimize your Docker configuration and get a better overall experience and more security. Install Docker CLI bash completion for easier handling.]]></description><link>https://sandro-keil.de/blog/docker-daemon-tuning-and-json-file-configuration/</link><guid isPermaLink="false">5b801214d8f3180001dd6715</guid><category><![CDATA[Docker]]></category><dc:creator><![CDATA[Sandro Keil]]></dc:creator><pubDate>Mon, 23 Jan 2017 20:12:21 GMT</pubDate><media:content url="https://sandro-keil.de/blog/content/images/2017/01/ford-tuning.jpg" medium="image"/><content:encoded><![CDATA[<img src="https://sandro-keil.de/blog/content/images/2017/01/ford-tuning.jpg" alt="Docker Daemon tuning and JSON file configuration"><p>The default Docker config works but there are some additional features which improves the overall experience with Docker. We will create a JSON config file with optimized options for the Docker Daemon, install bash completion for the Docker CLI commands with one line and increase security. But first things first.</p>
+<h2 id="dockerdockercomposeinstallation">Docker / Docker Compose installation</h2>
+<p>Please refer to the <a href="https://docs.docker.com/engine/installation/" title="Install Docker">official Docker installation docs</a> to install Docker on your specific system. To install Docker Compose, you can simply execute the following command which downloads Docker Compose 1.11 and makes it executable. Make sure you are <em>root</em>, otherwise you get a <em>permission denied</em> error. <a href="https://docs.docker.com/compose/" title="View documentation">Docker Compose</a> simplifies Mult-Container apps. It is a tool for defining and running Multi-Container Docker applications and maintains a logical definition of a distributed application. You can then deploy this stack to your Docker Swarm Cluster with <code>docker stack deploy --compose-file=docker-compose.yml my_stack</code>. But this is another great story.</p>
+<pre><code>$ curl -L https://github.com/docker/compose/releases/download/1.24.0/docker-compose-`uname -s`-`uname -m` &gt; /usr/local/bin/docker-compose
+$ chmod +x /usr/local/bin/docker-compose
+</code></pre>
+<h2 id="dockerdaemonconfiguration">Docker Daemon configuration</h2>
+<p>You can modify the Docker Daemon to improve overall performance and make it more robust. Especially the <a href="https://docs.docker.com/engine/userguide/storagedriver/selectadriver/#/future-proofing" title="Docker storage comparison">storage filesystem driver</a> is a key component. We will use the <em>overlay2</em> storage driver, which can be used with Linux kernel &gt;= 4.0 and Docker &gt;= 1.12. So make sure it is <a href="https://sandro-keil.de/blog/2015/12/20/docker-with-overlayfs-on-ubuntu/" title="Install overlayfs">available on your system</a>. There are some security features like <a href="https://github.com/docker/labs/blob/master/security/userns/README.md" title="Docker Labs Security">user namespaces</a> which should be enabled.</p>
+<p>Let's activate our own configuration file by running this command.</p>
+<blockquote>
+<p><strong>Warning:</strong> Your current Docker configuration will be overwritten.</p>
+</blockquote>
+<p>There is no way to move data from one storage to another, so all your Docker containers and images are not available anymore. You can delete everything <em>before</em> switching with the command <code>docker system prune</code> to save some disk space. This is optional of course and you may switch back, if you use your previous storage driver. Fasten your seatbelts and take off.</p>
+<pre><code>$ echo 'DOCKER_OPTS=&quot;--config-file=/etc/docker/daemon.json&quot;' &gt; /etc/default/docker
+</code></pre>
+<p>Create the file <code>/etc/docker/daemon.json</code> and put the following lines there. You find an excellent explanation of each configuration flag <a href="https://docs.docker.com/engine/reference/commandline/dockerd/" title="Docker CLI Flags">here</a>. In short, we use the storage driver <em>overlay2</em>, enable JSON log files with <a href="https://sandro-keil.de/blog/2015/03/11/logrotate-for-docker-container/" title="Logrotation for Docker container">logrotation</a> and enable user namespaces. <em>userns-remap</em> uses UID and GID which is 1000 on my system. You can check these values for your user by executing the command <code>id</code>.</p>
+<pre><code class="language-json">{
+  &quot;storage-driver&quot;: &quot;overlay2&quot;,
+  &quot;graph&quot;: &quot;/var/lib/docker&quot;,
+  &quot;log-driver&quot;: &quot;json-file&quot;,
+  &quot;log-opts&quot;: {
+    &quot;max-size&quot;: &quot;10m&quot;,
+    &quot;max-file&quot;: &quot;2&quot;
+  },
+  &quot;debug&quot;: false,
+  &quot;userns-remap&quot;: &quot;1000:1000&quot;
+} 
+</code></pre>
+<h2 id="dockerclibashcompletion">Docker CLI Bash completion</h2>
+<p>Do you know that Docker comes also with bash completion? This is really helpful. Make sure you are <em>root</em>, otherwise you get a <em>permission denied</em> error. The following command downloads the bash completion file for the current installed Docker version. You should also run this command after each Docker update.</p>
+<pre><code>curl -L https://raw.githubusercontent.com/docker/docker-ce/v$(docker -v | cut -d' ' -f3 | tr -d '\-ce,')/components/cli/contrib/completion/bash/docker &gt; /etc/bash_completion.d/docker
+</code></pre>
+<p>The bash completion is also available for Docker Compose which makes things easier. The following command downloads the bash completion file for the current installed Docker Compose version. You should also run this command after each Docker Compose update.</p>
+<pre><code>curl -L https://raw.githubusercontent.com/docker/compose/$(docker-compose version --short)/contrib/completion/bash/docker-compose &gt; /etc/bash_completion.d/docker-compose
+</code></pre>
+<p>Now it's time to restart the Docker service with <code>sudo service docker restart</code> (Ubuntu) and with <code>docker info</code> you should get this info. The bash completion will be available if you reopen your terminal. Let me know if you have other Docker config improvements.</p>
+<pre><code>Containers: 0
+ Running: 0
+ Paused: 0
+ Stopped: 0
+Images: 0
+Server Version: 1.13.1
+Storage Driver: overlay2
+ Backing Filesystem: extfs
+ Supports d_type: true
+ Native Overlay Diff: true
+Logging Driver: json-file
+Cgroup Driver: cgroupfs
+Plugins: 
+ Volume: local
+ Network: bridge host macvlan null overlay
+Swarm: inactive
+Runtimes: runc
+Default Runtime: runc
+Init Binary: docker-init
+containerd version: 03e5862ec0d8d3b3f750e19fca3ee367e13c090e
+runc version: 2f7393a47307a16f8cee44a37b262e8b81021e3e
+init version: 949e6fa
+Security Options:
+ apparmor
+ seccomp
+  Profile: default
+ userns
+Kernel Version: 4.8.12-040812-generic
+Operating System: Ubuntu 16.10
+OSType: linux
+Architecture: x86_64
+CPUs: 8
+Total Memory: 19.54 GiB
+Name: [MACHINE NAME]
+ID: [A LONG ID]
+Docker Root Dir: /home/[YOUR USERNAME]/docker/100000.100000
+Debug Mode (client): false
+Debug Mode (server): false
+Registry: https://index.docker.io/v1/
+WARNING: No swap limit support
+Experimental: false
+Insecure Registries:
+ 127.0.0.0/8
+Live Restore Enabled: false
+</code></pre>
+<h2 id="conclusion">Conclusion</h2>
+<p>This blog post has shown how to configure and optimize the Docker Daemon configuration. The Docker Daemon has now more performance due the <em>overlay2</em> storage and is more robust due the user namespaces. The CLI bash completion for Docker and Docker Compose is very handy too.</p>
+]]></content:encoded></item><item><title><![CDATA[My talk Docker for PHP Developers at PHP.RUHR]]></title><description><![CDATA[I'm very excited to give a talk at the PHP.RUHR conference in Dortmund. This conference takes place on November 10th for the third time in the Ruhr area.]]></description><link>https://sandro-keil.de/blog/my-talk-docker-for-php-developers-at-php-ruhr/</link><guid isPermaLink="false">5b801214d8f3180001dd6721</guid><category><![CDATA[Docker]]></category><category><![CDATA[Talks]]></category><dc:creator><![CDATA[Sandro Keil]]></dc:creator><pubDate>Tue, 18 Oct 2016 20:54:50 GMT</pubDate><media:content url="https://sandro-keil.de/blog/content/images/2016/10/php-ruhr-2016.png" medium="image"/><content:encoded><![CDATA[<img src="https://sandro-keil.de/blog/content/images/2016/10/php-ruhr-2016.png" alt="My talk Docker for PHP Developers at PHP.RUHR"><p>I'm very excited to give a talk at the <a href="https://2016.php.ruhr/" title="Buy a conference ticket">PHP.RUHR conference</a> in Dortmund. This conference takes place on November 10th for the third time in the Ruhr area, which is the largest metropolitan region in Germany. In addition to the programming language PHP, related topics such as IT security, databases and web hosting are also highlighted at the event. There are fifteen talks in all on this day, plus a workshop.</p>
+<h2 id="dockerforphpdevelopers">Docker for PHP Developers</h2>
+<p><a href="https://sandro-keil.de/slides/docker-for-php-developers/#/" title="View slides"><img src="https://sandro-keil.de/blog/content/images/2016/10/sandro-keil-docker-for-php-developers.png" alt="My talk Docker for PHP Developers at PHP.RUHR"></a></p>
+<p>Everyone talks about Docker and you might think Docker already belongs to the standard repertoire. In fact, Docker is revolutionizing web development. In minutes, a whole web server stack is set up to simulate the live environment. Why is Docker very good for PHP developers, you can learn in this talk. I introduce the Docker ecosystem and how to create your own Docker images and multi-container applications. In addition to a classic PHP webserver stack, I also give a few tips on general problems and what new challenges are coming to you.</p>
+<p>This is my third talk this year. I got a lot of feedback on the <a href="https://sandro-keil.de/blog/2016/09/20/my-conference-talks-in-september/" title="My conference talks in September">other talks</a>, which helps me to improve them. If you will be an attendee at the PHP.RUHR conference, don't hesitate to drop some notes here about my talk.</p>
+]]></content:encoded></item><item><title><![CDATA[My conference talks in September]]></title><description><![CDATA[I'm thrilled to give two talks in September. At PHP Developer Day in Dresden I will talk about Docker PHP builds & at code.talks in Hamburg about PHP profiler.]]></description><link>https://sandro-keil.de/blog/my-conference-talks-in-september/</link><guid isPermaLink="false">5b801214d8f3180001dd6723</guid><category><![CDATA[Docker]]></category><category><![CDATA[PHP]]></category><category><![CDATA[Talks]]></category><dc:creator><![CDATA[Sandro Keil]]></dc:creator><pubDate>Tue, 20 Sep 2016 20:32:49 GMT</pubDate><media:content url="https://sandro-keil.de/blog/content/images/2016/09/theatre.jpg" medium="image"/><content:encoded><![CDATA[<img src="https://sandro-keil.de/blog/content/images/2016/09/theatre.jpg" alt="My conference talks in September"><p>I'm thrilled to give two talks in September on different conferences. This is my first time, to be a Speaker on such a stage. I am very happy to have been accepted. Hopefully you can join and enjoy my talks. The first talk on 24th September in Dresden is about PHP Docker builds and the second one on 30th September in Hamburg is about PHP profiler.</p>
+<h2 id="thewaytohasslefreedockerphpwebstackdeployments">The Way to Hassle Free Docker PHP Web Stack Deployments</h2>
+<p><a href="https://sandro-keil.de/blog/slides/the-way-to-hassle-free-docker-php-web-stack-deployments/#/" title="View slides"><img src="https://sandro-keil.de/blog/content/images/2016/09/sandro-keil-phpdd16.png" alt="My conference talks in September"></a></p>
+<p>The <a href="https://www.move-elevator.de/php-developer-day-2016/" title="Conference for PHP enthusiasts">PHP Developer Day</a> in Dresden is a free conference and brought to you by <em>move:elevator</em> and the <a href="http://www.phpug-dresden.org/" title="Group of PHP enthusiasts">PHP USERGROUP DRESDEN e.V.</a>. Some of the great speakers are Bernhard Schussek, Sebastian Heuer and Benjamin Cremer. And of course, the members of PHPUGDD Holger Woltersdorf, Tommy Mühle and Patrick Pächnatz have awesome talks too. Don't hesitate to grab your free ticket now to join us on 24th September.</p>
+<p>I will speak about <em>The Way to Hassle Free Docker PHP Web Stack Deployments</em>. Good things come in small containers. A typical PHP web server stack has at least three Docker containers. A nginx, PHP-FPM and a database Docker image is created quickly for development, but the way for deployment is longer as you think. This talk is about <em>single source of truth</em>, <em>rebuild any version, any service, any time</em>, and <em>what's going on in my app</em> aka logging. The persistence of data is not missed. If the build is ready, the deployment can be done, or maybe not?</p>
+<h2 id="aneweraofphpprofiler">A new era of PHP profiler</h2>
+<p><a href="https://sandro-keil.de/slides/a-new-era-of-php-profiler/#/" title="View slides"><img src="https://sandro-keil.de/blog/content/images/2016/09/sandro-keil-php-profiler-codetalks.png" alt="My conference talks in September" title="one of the biggest conferences"></a></p>
+<p>The <a href="https://www.codetalks.de" title="Popcorn, Nachos and Code">code.talks conference</a> in Hamburg has more than 1500 attendees and is one of the biggest conferences in europe. There are more than eighty talks on two days from 29th - 30th September. The level of the talks reaches from basic till experts. This is really awesome.</p>
+<p>I will speak about <em>A new era of PHP profiler</em>. Xdebug and XHProf belong to the old generation, but they work properly. But the new PHP profiler revolutionize the analysis of PHP applications. Bottlenecks or inefficient code are things of the past now. Why and how to profile the PHP code and what is the difference between Profiling and Benchmarking? This talk has not only answers to these questions. We take a closer look to SensioLabs Blackfire, Tideways and Zend Z-Ray.</p>
+<p>I want to thank my employer <a href="http://prooph-software.de/" title="Smart web applications for your digital business">prooph software GmbH</a>, which gives me the free time to be at the conference.</p>
+]]></content:encoded></item><item><title><![CDATA[Docker Compose with named Volumes and multiple Networks]]></title><description><![CDATA[Named volumes are better as data only containers and multiple networks increases security. See how the new Docker Compose configuration format works. ]]></description><link>https://sandro-keil.de/blog/docker-compose-with-named-volumes-and-multiple-networks/</link><guid isPermaLink="false">5b801214d8f3180001dd671d</guid><category><![CDATA[Docker]]></category><dc:creator><![CDATA[Sandro Keil]]></dc:creator><pubDate>Mon, 02 May 2016 20:17:42 GMT</pubDate><media:content url="https://sandro-keil.de/blog/content/images/2016/05/docker-compose-container.jpg" medium="image"/><content:encoded><![CDATA[<img src="https://sandro-keil.de/blog/content/images/2016/05/docker-compose-container.jpg" alt="Docker Compose with named Volumes and multiple Networks"><p>In Docker Compose 1.6 or higher Networks and Volumes are now first class citizens. This means you have more control and you can use individual services in one or more networks. Sharing volumes have been improved. It was never so easy. A new <code>docker-compose.yml</code> format was introduced. The Docker compose config file must start with an entry <code>version: &quot;2&quot;</code> to use the new features. This blog post covers a typical web server stack with nginx, PHP-FPM and MariaDB with the new Docker Compose configuration format.</p>
+<h2 id="dockernamedvolumes">Docker Named Volumes</h2>
+<p>One really interesting point is to use named volumes. You can create new volumes with <code>docker volume create my-volume</code> or you can use Docker Compose too. The latter one creates a default volume with the prefix of the name of the project. With this, you don't need data only containers anymore. Which is a good benefit. The command <code>docker-compose ps</code> won't have extra dead entries, and <code>docker volume ls</code> will have more descriptive output, because volumes have names. I guess there is also a slightl performance improvement, if you have some data only containers, because Docker Compose doesn't have to start the data only containers.</p>
+<p>So, when should I use named volumes? Every time, especially for persistence data like Databases! One benefit is, that you have only change the volume driver and then you can use <em>flocker</em> for instance. This could be useful for production. For development, you can mount your PHP files directly in the container. You can read more about best practices in <a href="https://sandro-keil.de/blog/2016/01/26/docker-for-php-developers/" title="Docker production best practice">Docker for PHP Developers</a>.</p>
+<h2 id="dockerwithmultiplenetworks">Docker with Multiple Networks</h2>
+<p>A DNS is embedded in the Docker engine to auto discover services by name. No link definitions needed, but you can still use it. You can access other container by their name from another container in the same network. No linking means a faster start of the application, because of the asynchronous start. You can put Docker Container on different networks to increase the security, for instance <em>frontend</em> and <em>backend</em>.</p>
+<h2 id="typicalwebserverstack">Typical web server stack</h2>
+<p>The new Docker Compose configuration format has three top level keys named <em>services</em>, <em>volumes</em> and <em>networks</em>. The following server stack contains a nginx, PHP-FPM and a MariaDB (MySQL) container with a named data volume for the database data. Only the nginx Docker container is in the <em>frontend</em> network. The others are put to the <em>backend</em> network.</p>
+<pre><code class="language-yaml">version: '2'
+services:
+  #
+  # [ server stack ]
+  #
+  # - nginx
+  # - php
+  # - mysql
+  #
+  nginx:
+    image: prooph/nginx:www
+    restart: &quot;always&quot;
+    links:
+      # nginx access the php-fpm container with php 
+      - php-fpm:php
+    networks:
+      - frontend
+      # nginx must communicate with php-fpm from the backend network
+      - backend
+
+  php-fpm:
+    image: prooph/php:7.0-fpm
+    restart: &quot;always&quot;
+    # see 12factor.net why env variables are used here
+    environment:
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    networks:
+      - backend
+
+  mysql:
+    image: mariadb
+    restart: &quot;always&quot;
+    # named volumes come here into play
+    volumes:
+      - data-mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    networks:
+      - backend
+
+#
+# [ volumes definition ]
+#
+# creates Docker volumes which can be mounted by other containers too e.g. for backup
+#
+volumes:
+  data-mysql:
+    driver: local
+
+#
+# [ networks definition ]
+#
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+</code></pre>
+<h2 id="conclusion">Conclusion</h2>
+<p>The new features of Docker Compose and Docker gives you great benefits. Faster Docker container starts, increased network security and better portability of the volumes. Further Docker daemon improvement is to use the <a href="https://sandro-keil.de/blog/2015/12/20/docker-with-overlayfs-on-ubuntu/" title="Docker with OverlayFS on Ubuntu">overlayfs storage driver</a>. Remember that you can also use multiple Docker Compose configuration files and merge or extend from them. One example is to setup your production configuration and overwrite only the parts for development e.g. ports or volume definitions.</p>
+]]></content:encoded></item><item><title><![CDATA[PHP 7 Expectations / Assertions]]></title><description><![CDATA[Are PHP 7 Expectations a replacement for assertion libraries? Is it useful for PHP libraries? Get a closer look on assertions with this blog post. ]]></description><link>https://sandro-keil.de/blog/php-7-expectations-assertions/</link><guid isPermaLink="false">5b801214d8f3180001dd671e</guid><category><![CDATA[PHP]]></category><dc:creator><![CDATA[Sandro Keil]]></dc:creator><pubDate>Thu, 17 Mar 2016 21:52:46 GMT</pubDate><media:content url="https://sandro-keil.de/blog/content/images/2016/03/security.jpg" medium="image"/><content:encoded><![CDATA[<img src="https://sandro-keil.de/blog/content/images/2016/03/security.jpg" alt="PHP 7 Expectations / Assertions"><p>PHP 7 has many new features. One of them are <em>Expectations</em> maybe better known as assertions. It's a common practice to use an assertion library like <code>beberlei/assert</code> to ensure correct values and types on low level, for instance Value Objects or Aggregates. On the first sight, the  <em>Expectations</em> in PHP 7 can replace the assertion libraries and you have a dependency fewer and of course no static calls. <code>assert()</code> is a language construct in PHP 7, so it's quite faster than (static) function calls. Sounds good, but not on the second sight.</p>
+<p>I'm surprised that PHP 7 <em>Expectations</em> should only used for development. I know that assertions are not replacing input filtering and validation but is it a replacement for assertion libraries? You know, if you rely on an external dependency, you are dependent on the time of the Maintainer or contributors. Things are changed from time to time and what is if your <a href="https://github.com/beberlei/assert/pull/131" title="use PHP intl extension instead of mbstring">PR is not recognized</a>. Sure, you can write all the stuff yourself, but that's not an option and in the end it's even worse than this.</p>
+<h2 id="problemdetailsforhttpapis">Problem Details for HTTP APIs</h2>
+<p>Take a look at a typical problem if you work with APIs and a server to server communication. You want to map the JSON data to an object. This example uses the <a href="https://apigility.org/documentation/api-primer/error-reporting">API Problem from Apigility</a>. The requirements are that the response object should be immutable and don't use reflection. And a fixed set of data is provided and some optional information can be available. The only solution is constructor injection with an array. That's a nice solution, because the caller have only put the JSON encoded data to the constructor. Note, we trust Apigility to provide the right data if the <em>application/problem+json</em> header is present. The response object can look like this:</p>
+<pre><code class="language-php">declare(strict_types = 1);
+
+class ApiProblem
+{
+    private $data;
+
+    public function __construct(array $data)
+    {
+        $this-&gt;data = $data;
+    }
+
+    public function type() : string
+    {
+        return $this-&gt;data['type'];
+    }
+
+    public function title() : string
+    {
+        return $this-&gt;data['title'];
+    }
+
+    public function status() : int
+    {
+        return $this-&gt;data['status'];
+    }
+
+    public function detail() : string
+    {
+        return $this-&gt;data['detail'];
+    }
+
+    public function additionalDetails(string $name)
+    {
+        return $this-&gt;data[$name] ?? null;
+    }
+}
+</code></pre>
+<p>Nothing special here, but strict types are used and if one the function doesn't return the correct type, for instance <em>null</em> instead <em>string</em>, an error is raised. Sure you can use checks in the functions like <code>return $this-&gt;data['detail'] ?? '';</code> but is this good code? You must be able to rely on some data definitions. Here is where assertion libraries and PHP 7 <em>Expectations</em> comes into the game.</p>
+<p>With <code>beberlei/assert</code> the constructor function would look like this:</p>
+<pre><code class="language-php">public function __construct(array $data)
+{
+    Assertion::allKeyExists($data, [ 'type',  'title', 'status', 'detail'], 'Not set');
+
+    Assertion::string($data['type'], '&quot;type&quot; wrong');
+    Assertion::string($data['title'], '&quot;title&quot; wrong');
+    Assertion::integer($data['status'], '&quot;status&quot; wrong');
+    Assertion::string($data['detail'], '&quot;detail&quot; wrong');
+
+    $this-&gt;data = $data;
+}
+</code></pre>
+<p>To use PHP 7 <em>Expectations</em> you must configure your PHP ini settings with <code>ini_set('assert.exception', 1); ini_set('zend.assertions', -1);</code> . The constructor function would look like this:</p>
+<pre><code class="language-php">public function __construct(array $data)
+{
+    assert(isset($data['type']) &amp;&amp; is_string($data['type']), '&quot;type&quot; not set/wrong');
+
+    assert(isset($data['title']) &amp;&amp; is_string($data['title']), '&quot;title&quot; not set/wrong');
+
+    assert(isset($data['status']) &amp;&amp; is_int($data['status']), '&quot;status&quot; not set/wrong');
+
+    assert(isset($data['detail']) &amp;&amp; is_string($data['detail']), '&quot;detail&quot; not set/wrong');
+
+    $this-&gt;data = $data;
+}
+</code></pre>
+<p>With PHP 7 <em>Expectations</em> you can also use your own exceptions for instance <code>assert(false, new MyDomainException('my message'));</code>. This can be useful to catch exceptions by component, but in most cases, if something goes wrong on this level, you can only graceful give up. But it's really good for debugging or analyzing the abnormal behaviour.</p>
+<p>On the <em>Pro</em> side there is no new project dependency and you can use own exceptions.</p>
+<p>On the <em>Contra</em> side it's only useful for type checks. Otherwise it's too much boilerplate code and error prone for instance <code>strlen()</code> checks and it depends on PHP ini settings.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>You cannot rely that the <em>Expectations</em> throw exceptions because it depends on PHP ini settings. That's a no go for public code, but internal projects can use it. If your internal component has to do only some simple checks, then maybe it's good to avoid any assertion library and use <code>assert()</code> instead. It could also be useful to write an own assertion library which fits your needs and which don't rely on not needed PHP extensions. If you use the PHP <em>intl</em> extension, why should you install the PHP <em>mbstring</em> extension too?</p>
+<p>Don't hesitate to put a comment and share your experience with PHP 7 <em>Expectations</em>.</p>
+]]></content:encoded></item><item><title><![CDATA[Docker for PHP Developers]]></title><description><![CDATA[Docker is a great way to emulate live server environment. You can have the same infrastructure stack like multiple web, PHP-FPM, Database & CDN server.]]></description><link>https://sandro-keil.de/blog/docker-for-php-developers/</link><guid isPermaLink="false">5b801214d8f3180001dd6713</guid><category><![CDATA[Docker]]></category><category><![CDATA[PHP]]></category><dc:creator><![CDATA[Sandro Keil]]></dc:creator><pubDate>Tue, 26 Jan 2016 07:09:12 GMT</pubDate><media:content url="https://sandro-keil.de/blog/content/images/2016/01/programming.jpg" medium="image"/><content:encoded><![CDATA[<img src="https://sandro-keil.de/blog/content/images/2016/01/programming.jpg" alt="Docker for PHP Developers"><p>Docker is a great way to emulate live server environment. Sure, you don't have the same hardware, but you can have the same infrastructure stack like multiple web, PHP-FPM, Database, CDN server and so on. Another reason why to use Docker for PHP development is, that it's faster than Vagrant and needs much fewer resources as Virtual Box machines. But it's also possible to use Docker in a Vagrant Box.</p>
+<blockquote>
+<p>Looking for an <a href="http://prooph-software.de/blog/docker-php-webentwicklung.html#blog-text" title="PHP Webentwicklung mit Docker">extended german version</a>? There are also <a href="https://sandro-keil.de/slides/docker-for-php-developers/#/" title="My PHP Usergroup Dresden talk Docker for PHP Developers">slides</a> from my PHP Usergroup Dresden talk available.</p>
+</blockquote>
+<h2 id="phpwebserverstack">PHP webserver stack</h2>
+<p>A typical PHP webserver stack contains nginx, PHP-FPM and a MySQL database like MariaDB. How much time do you need to setup such a system? What if I would say, you need only 20 lines of configuration, Docker and some minutes? I'm curious, no! ;-) We at <a href="http://prooph-software.de/" title="Software Dienstleister für webbasierte Business Anwendungen">prooph software</a> have some Docker images for development, which fits this webserver stack and we have a <a href="https://github.com/prooph/proophessor-do" title="prooph components in action">cool example app</a> which uses this webserver stack and some other cool features like CQRS, Service Bus and Event Sourcing with Snapshots.</p>
+<p>If you not have already installed and optimized Docker, take a look at <a href="https://sandro-keil.de/blog/2015/12/20/docker-with-overlayfs-on-ubuntu/" title="Docker with OverlayFS on Ubuntu">using Docker with OverlayFS on Ubuntu</a>. Here is the Docker Compose YAML configuration which setups the PHP webserver stack with nginx, PHP-FPM and MariaDB. Save this configuration to an empty directory or an example project with name <em>docker-compose.yml</em>.</p>
+<blockquote>
+<p>If you destroy the container, the data of the database will be lost in this example!</p>
+</blockquote>
+<pre><code class="language-yaml">nginx:
+  image: prooph/nginx:www
+  ports:
+      - &quot;8080:80&quot;
+      - &quot;443:443&quot;
+      # these ports are for Zend Z-Ray
+      - &quot;10081:10081&quot;
+      - &quot;10082:10082&quot;
+  links:
+    - php:php
+  volumes_from:
+    - dataphp
+
+php:
+  image: prooph/php:7.0-fpm
+  links:
+    - mariadb:mariadb
+  volumes_from:
+    - dataphp
+
+dataphp:
+  image: debian:jessie
+  volumes:
+    - .:/var/www
+
+mariadb:
+  image: mariadb
+  ports:
+    - 3306:3306
+  environment:
+    - MYSQL_ROOT_PASSWORD=dev
+    - MYSQL_USER=dev
+    - MYSQL_PASSWORD=dev
+    - MYSQL_DATABASE=proophessor
+</code></pre>
+<p>The nginx vHost is configured for the folder <em>public</em>. Create an <em>index.php</em> file with <code>&lt;?php echo 'Hello World!';</code> if it doesn't exists. Now start the Docker containers with <code>docker-compose up -d</code> and open the browser at <code>http://localhost:8080</code>. nginx is configured with HTTP/2 and SSL. Check this with <code>https://localhost</code>.</p>
+<h2 id="useadatabasedatacontainer">Use a database data container</h2>
+<p>To avoid losing database data if you destroy the container you need a Docker data container for the database. The MariaDB Docker image has a volume <code>/var/lib/mysql</code> defined, so you can mount a Docker data container at this location. You don't want that the database data is available in your PHP Docker container. It's necessary to change the mounted paths of the PHP Docker data container with a list of needed folders for the webserver. This is an exercise for you.</p>
+<h2 id="whatsaboutphpdebugging">What's about PHP debugging</h2>
+<p>With Docker you are free to switch your environment in seconds. If you want to use Xdebug, simply change the line 15 with <code>prooph/5.6-php-fpm-xdebug</code> and rebuild your server stack with <code>docker-compose stop &amp;&amp; docker-compose rm -f &amp;&amp; docker-compose up -d</code>. Now you can debug your application. Ensure that your IDE is listen to port 10000, becaue port 9000 is used by PHP-FPM. If you need help, please check my blog post about <a href="https://sandro-keil.de/blog/2014/12/30/vagrant-remote-php-cli-debugging/#remotephpdebugging" title="Remote PHP Debugging with Docker">remote PHP debugging</a>.</p>
+<p>Do you need a PHP Profiler? No problem, change line 2 with <code>prooph/nginx:zray</code> and line 15 <code>prooph/php:5.6-fpm-zray</code> to use Zend Z-Ray Profiler. You have to configure the <a href="https://github.com/prooph/docker-files/tree/master/php#php-56-fpm-with-zend-z-ray" title="Configure Zend Z-Ray">Zend Z-Ray URL</a>. This is why the ports 10081 and 10082 are exposed in the example above. Don't know which PHP profiler you should use? Read more about <a href="https://sandro-keil.de/blog/2015/02/10/php-profiling-tools/" title="PHP Profiler comparion">PHP Profiler Z-Ray, Blackfire and Tideways</a>.</p>
+<h2 id="productionbestpractice">Production best practice</h2>
+<p>There were some questions how to use PHP Docker container in production. Well, put the PHP source code into the PHP Docker image. Your logs should be logged to stdout or you use <a href="https://sandro-keil.de/blog/2015/03/11/logrotate-for-docker-container/" title="Logrotate for Docker container">another Docker log driver</a>. Product images or user generated content should be mounted into the container, so you can use a CDN and another Docker volume plugin driver like <em>flocker</em> to support more than one server.</p>
+<p>You don't need Ansible, Puppet or Chef. Settings like DB credentials should be defined as environment variables. This is really cool, because this image with your version of the source code runs on production, staging, testing and development without changing the configuration. No more environment checks or switches in your application.</p>
+<p>It's easy to deploy a new version. Spin up the new container and stop the old container. Switching back to the old version is also easy. You don't have to maintenance your server host system, if you use a Docker hosting provider. Simply build a new image and ship it.</p>
+<p>The nginx image doesn't know anything of your PHP application. The mount of the PHP data to the nginx Container in the example above is used for the application assets (CSS, JS, images). So it's easier to start, but it's not mandatory, especially when you use a CDN.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>With Docker it's so easy to build infrastructure for development like a production environment. You can also override your production Docker images with an extended development environment where you have running a PHP profiler. And last but not least, you can check how your application works on scale with less ressources as with virtual machines.</p>
+]]></content:encoded></item><item><title><![CDATA[Docker with OverlayFS on Ubuntu]]></title><description><![CDATA[Docker uses the DeviceMapper storage driver as default, but OverlayFS is much faster. See how to configure Docker with OverlayFS to improve the performance.]]></description><link>https://sandro-keil.de/blog/docker-with-overlayfs-on-ubuntu/</link><guid isPermaLink="false">5b801214d8f3180001dd6710</guid><category><![CDATA[Docker]]></category><dc:creator><![CDATA[Sandro Keil]]></dc:creator><pubDate>Sun, 20 Dec 2015 21:35:00 GMT</pubDate><media:content url="https://sandro-keil.de/blog/content/images/2015/12/rope.jpg" medium="image"/><content:encoded><![CDATA[<img src="https://sandro-keil.de/blog/content/images/2015/12/rope.jpg" alt="Docker with OverlayFS on Ubuntu"><p>Docker uses the <em>DeviceMapper</em> storage driver as default if no other driver is available. That's ok and it works, mostly. I run, sometimes into trouble, because the container could not be started. At the end, I have to delete Docker container and images and create it again. The <a href="https://jpetazzo.github.io/assets/2015-03-03-not-so-deep-dive-into-docker-storage-drivers.html"><em>OverlayFS</em> driver is faster than <em>DeviceMapper</em> and <em>aufs</em></a>. You can also <a href="https://docs.docker.com/engine/userguide/storagedriver/overlayfs-driver/" title="Docker and OverlayFS in practice">read more about OverlayFS on Docker.com</a>. In this Blog post you will learn how to configure your Linux system and Docker to use the <em>OverlayFS</em> storage driver.</p>
+<h2 id="checkcurrentdockerstoragedriver">Check current Docker storage driver</h2>
+<p>If you not have Docker currently installed, skip this section and go to <em>Configure Docker with OverlayFS</em>. Otherwise run the command <code>docker info</code> to see information about your Docker environment. Important is the <em>storage driver</em>. If you not already using <em>OverlayFS</em> as the Docker storage driver, you see something like <em>devicemapper</em> or <em>aufs</em>. The following output shows that the <em>OverlayFS</em> storage driver is used.</p>
+<pre><code class="language-bash">Containers: 14
+Images: 501
+Server Version: 1.9.1
+Storage Driver: overlay
+ Backing Filesystem: extfs
+Execution Driver: native-0.2
+Logging Driver: json-file
+Kernel Version: 3.19.8-031908-generic
+Operating System: Ubuntu 15.04
+CPUs: 8
+Total Memory: 7.73 GiB
+</code></pre>
+<h2 id="checkifoverlayfsisavailable">Check if OverlayFS is available</h2>
+<p>Depending on your Linux version, <em>OverlayFS</em> is not in the Linux kernel upstream. However, to check if <em>OverlayFS</em> is already installed, run the command <code>lsmod | grep overlay</code>. If you get an output with <em>overlayfs</em>, you are ready to enable OverlayFS in your Docker config.</p>
+<p>If you have no output, check your Linux kernel version with the command <code>uname -a</code>. You should see somthing like that: <em>Linux ThinkPad 3.19.8-031908-generic #201505110938 SMP Mon May 11 13:39:59 UTC 2015 x86_64 x86_64 x86_64 GNU/Linux</em>. The Linux kernel version here is <em>3.19.8</em>. <em>OverlayFS</em> is available since linux kernel 3.18.</p>
+<h3 id="upgradeubuntukernel">Upgrade Ubuntu kernel</h3>
+<p>If <em>OverlayFS</em> is not available on your system you can simply upgrade your Linux kernel to a newer version. The current example uses the kernel version 4.3 for a 64 Bit system, but you are free to use another <a href="http://kernel.ubuntu.com/~kernel-ppa/mainline/" title="Ubuntu mainline kernel repository">kernel version &gt;= 3.18</a>.</p>
+<pre><code class="language-bash">$ wget http://kernel.ubuntu.com/~kernel-ppa/mainline/v4.3-wily/linux-headers-4.3.0-040300-generic_4.3.0-040300.201511020949_amd64.deb
+
+$ wget http://kernel.ubuntu.com/~kernel-ppa/mainline/v4.3-wily/linux-image-4.3.0-040300-generic_4.3.0-040300.201511020949_amd64.deb
+
+$ wget http://kernel.ubuntu.com/~kernel-ppa/mainline/v4.3-wily/linux-headers-4.3.0-040300-generic_4.3.0-040300.201511020949_all.deb
+
+$ sudo dpkg -i linux-headers-4.3.0*.deb linux-image-4.3.0*.deb
+</code></pre>
+<p>Now reboot your system and check if <em>OverlayFS</em> is available (see above).</p>
+<p>Another possibility to use a different storage driver than <em>devicemapper</em> is to install the linux-image-extra kernel with the command <code>sudo apt-get -y install linux-image-extra-$(uname -r)</code>, if you can't upgrade your Linux kernel.</p>
+<h2 id="configuredockerwithoverlayfs">Configure Docker with OverlayFS</h2>
+<p>To enable <em>OverlayFS</em> for Docker open <code>/etc/default/docker</code> and put the following line <code>DOCKER_OPTS=&quot;--storage-driver=overlay&quot;</code> at the end of the file. Restart the Docker daemon with <code>sudo service docker restart</code> or  <a href="https://docs.docker.com/engine/installation/ubuntulinux/">install Docker now</a> and check if Docker uses <em>OverlayFS</em> (see above).</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Using Docker with <em>OverlayFS</em> is easy and there is a better performance. You should also use the <em>OverlayFS</em> Docker storage driver for development. Now, I'm waiting for User Namespaces to avoid the file permission issues in development. <em>guso</em> is not an option. Don't forget to <a href="https://sandro-keil.de/blog/2015/03/11/logrotate-for-docker-container/" title="Logrotate for Docker container">enable Logrotate for the Docker log files</a>.</p>
+]]></content:encoded></item></channel></rss>
